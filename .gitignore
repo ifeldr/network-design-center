@@ -2,3 +2,4 @@
 # Fa eccezione solo la libreria pdf.js in assets/rack-designer/vendor, che non contiene PDF.
 *.pdf
 *.PDF
+tests/out/

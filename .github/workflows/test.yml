@@ -1,0 +1,35 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Controllo sintassi JavaScript
+        run: for f in assets/rack-designer/*.js; do node --check "$f" || exit 1; done
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Installa Playwright
+        run: |
+          pip install playwright
+          python -m playwright install --with-deps chromium
+      - name: Test in italiano e in inglese
+        run: python tests/run_tests.py
+      - name: Schermate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: schermate
+          path: tests/out/
+          if-no-files-found: ignore

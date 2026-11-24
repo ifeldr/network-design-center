@@ -300,7 +300,7 @@ async function gistSave(asNew){
     P.gistId=g.id;save();toast('Progetto salvato su Gist');openGist()}catch(e){toast('Salvataggio non riuscito: '+e.message)}
 }
 async function gistOpen(id){
-  if(!confirm('Aprire il progetto da Gist? Il progetto corrente viene sostituito (puoi tornare indietro con Ctrl+Z).'))return;
+  if(!confirm('Aprire il progetto da Gist? Se è già in questo browser viene aggiornato, altrimenti si aggiunge ai tuoi progetti (puoi tornare indietro con Ctrl+Z).'))return;
   try{const g=await gh('/gists/'+id);const f=Object.values(g.files).find(x=>x.filename.endsWith('.ndc.json'));let txt=f.content;if(f.truncated)txt=await (await fetch(f.raw_url)).text();
     const j=JSON.parse(txt);j.gistId=id;await loadProject(j);closeModal();toast('Progetto aperto da Gist')}catch(e){toast('Apertura non riuscita: '+e.message)}
 }

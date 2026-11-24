@@ -793,7 +793,21 @@ function autoArrange(r){
 }
 
 /* ---------------- persistenza e cronologia ---------------- */
-function save(){try{localStorage.setItem(STORE,JSON.stringify(P))}catch(e){toast('Salvataggio nel browser non riuscito (spazio esaurito?)')}}
+/* ---------------- archivio dei progetti nel browser ---------------- */
+const PIDX='ndc-progetti',PCUR='ndc-corrente',PKEY=id=>'ndc-p:'+id;
+function projIndex(){try{return JSON.parse(localStorage.getItem(PIDX))||[]}catch(_){return []}}
+function projSetIndex(l){localStorage.setItem(PIDX,JSON.stringify(l))}
+function projGet(id){try{return JSON.parse(localStorage.getItem(PKEY(id)))}catch(_){return null}}
+function projMeta(p,upd){return {id:p.pid,name:p.name||'',upd:upd||Date.now(),racks:(p.racks||[]).length,plans:(p.plans||[]).length,devices:(p.devices||[]).length}}
+function projExists(id){return !!id&&projIndex().some(x=>x.id===id)}
+function freshPid(j){if(!j.pid||(projExists(j.pid)&&j.pid!==P?.pid))j.pid=uid();return j}
+function save(){try{P.pid??=uid();localStorage.setItem(PKEY(P.pid),JSON.stringify(P));const l=projIndex().filter(x=>x.id!==P.pid);l.unshift(projMeta(P));projSetIndex(l);localStorage.setItem(PCUR,P.pid)}catch(e){toast('Salvataggio nel browser non riuscito (spazio esaurito?)')}}
+function openProject(id){const j=projGet(id);if(!j)return false;j.pid=id;P=normalize(j);S.rack=P.racks[0]?.id;S.plan=P.plans[0]?.id||null;S.item=null;S.port=null;S.mk=null;S.pz={};S.hist=[];S.fut=[];S.calib=null;S.placing=null;try{localStorage.setItem(PCUR,id)}catch(_){}render();return true}
+function newProject(){blankProject();P.pid=uid();save();render()}
+/* immagini e foto usate da altri progetti salvati (o dalle versioni): non si cancellano */
+function imgRefs(p){const s=new Set();(p.plans||[]).forEach(x=>s.add(x.id));const ph=o=>(o.photos||[]).forEach(x=>s.add(x));(p.racks||[]).forEach(r=>{ph(r);(r.items||[]).forEach(ph)});(p.devices||[]).forEach(ph);return s}
+function usedElsewhere(k){k=String(k);if(k.startsWith('ver:'))return true;return projIndex().some(x=>x.id!==P?.pid&&imgRefs(projGet(x.id)||{}).has(k))}
+{const _d=DB.del.bind(DB);DB.del=async k=>{if(usedElsewhere(k))return;return _d(k)};DB.purge=_d}
 function mutate(fn){
   const snap=JSON.stringify(P);
   const res=fn();
@@ -1453,11 +1467,11 @@ document.addEventListener('click',e=>{if(!e.target.closest('#moreMenu'))$('#more
 $('#moreMenu .menu-lista').addEventListener('click',e=>{
   const m=e.target.closest('[data-m]')?.dataset.m;if(!m)return;$('#moreMenu').classList.remove('open');
   ({topo:openTopo,print:()=>$('#printBtn').onclick(),csv:exportCsv,json:exportJson,import:()=>$('#fileIn').click(),share:shareLink,mode:toggleMode,help:openHelp,
-    new:()=>{if(confirm('Creare un nuovo progetto vuoto? Puoi tornare indietro con Ctrl+Z.')){const old=JSON.stringify(P);blankProject();S.hist=[old];save();render()}}})[m]?.();
+    new:()=>{newProject();toast('Nuovo progetto creato: il precedente resta in «I miei progetti»')}})[m]?.();
 });
 $('#fileIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const j=JSON.parse(await f.text());if(!j.racks)throw 0;
   const imgs=j.images||{};delete j.images;for(const [id,data] of Object.entries(imgs)){const b=await dataToBlob(data);await DB.put(id,b);if(IMG[id])URL.revokeObjectURL(IMG[id]);IMG[id]=URL.createObjectURL(b)}
-  const old=JSON.stringify(P);P=normalize(j);S.hist.push(old);S.rack=P.racks[0]?.id;S.plan=P.plans[0]?.id||null;S.item=null;S.mk=null;S.pz={};save();render();toast('Progetto importato')}catch(_){toast('File non valido')}};
+  freshPid(j);const old=JSON.stringify(P);P=normalize(j);S.hist.push(old);S.rack=P.racks[0]?.id;S.plan=P.plans[0]?.id||null;S.item=null;S.mk=null;S.pz={};save();render();toast('Progetto importato')}catch(_){toast('File non valido')}};
 $('#planIn').onchange=e=>{const f=e.target.files[0];e.target.value='';if(f)importPlanFile(f)};
 $('#modal').addEventListener('click',e=>{if(e.target.id==='modal'||e.target.closest('[data-close]'))closeModal();const n=e.target.closest('[data-goto]');if(n){S.view='rack';S.rack=n.dataset.goto;S.item=null;closeModal();render()}});
 document.addEventListener('keydown',e=>{
@@ -1591,7 +1605,7 @@ async function loadFromHash(){
   try{let s=m[1].replace(/-/g,'+').replace(/_/g,'/');const kind=s[0];s=s.slice(1);while(s.length%4)s+='=';const bin=atob(s);let json;
     if(kind==='z'){const bytes=Uint8Array.from(bin,c=>c.charCodeAt(0));json=await new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text()}
     else json=decodeURIComponent(escape(bin));
-    const j=JSON.parse(json);if(!j.racks)throw 0;P=normalize(j);S.rack=P.racks[0].id;history.replaceState(null,'',location.pathname+location.search);toast('Progetto caricato dal link');return true}catch(e){toast('Link non valido');return false}
+    const j=JSON.parse(json);if(!j.racks)throw 0;freshPid(j);P=normalize(j);S.rack=P.racks[0].id;history.replaceState(null,'',location.pathname+location.search);save();toast('Progetto caricato dal link');return true}catch(e){toast('Link non valido');return false}
 }
 async function planCanvas(pl,maxDim=3200){
   const url=await imgUrl(pl.id);if(!url)throw new Error('img');const im=await imgEl(url);
@@ -1638,11 +1652,17 @@ let tt,quiet=false;function toast(m){if(quiet)return;const t=$('#toast');t.textC
 (async function init(){
   try{const uh=+localStorage.getItem('rd-uh');if(uh)S.uh=uh}catch(_){}
   if(!(await loadFromHash())){
-    let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE))}catch(_){}
-    // il vecchio progetto di esempio, se ancora salvato nel browser, viene scartato
-    const esempio=saved&&saved.name==='Sede di esempio'&&(saved.racks||[]).some(r=>/^Centro stella edificio A/.test(r.note||''));
-    if(esempio){try{localStorage.removeItem(STORE)}catch(_){}(saved.plans||[]).forEach(p=>DB.del(p.id))}
-    if(saved&&saved.racks?.length&&!esempio){P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else blankProject();
+    let cur=null;try{cur=localStorage.getItem(PCUR)}catch(_){}
+    // passaggio dal salvataggio singolo all'archivio dei progetti
+    if(!localStorage.getItem(PIDX)){let old=null;try{old=JSON.parse(localStorage.getItem(STORE))}catch(_){}
+      // il vecchio progetto di esempio, se ancora salvato nel browser, viene scartato
+      const esempio=old&&old.name==='Sede di esempio'&&(old.racks||[]).some(r=>/^Centro stella edificio A/.test(r.note||''));
+      if(esempio)(old.plans||[]).forEach(p=>DB.del(p.id));
+      else if(old&&old.racks?.length){old.pid??=uid();try{localStorage.setItem(PKEY(old.pid),JSON.stringify(old));projSetIndex([projMeta(old)]);cur=old.pid}catch(_){}}
+      try{localStorage.removeItem(STORE)}catch(_){}}
+    let saved=(cur&&projGet(cur))||(projIndex()[0]&&projGet(projIndex()[0].id));
+    if(saved&&saved.racks?.length){saved.pid??=cur||uid();P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else{blankProject();P.pid=uid()}
+    try{localStorage.setItem(PCUR,P.pid)}catch(_){}
   }
   if(innerWidth<820)S.uh=Math.min(S.uh,20);
   render();

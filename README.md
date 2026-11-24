@@ -23,11 +23,33 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer.js` | logica: regole, validatore, etichette, planimetrie, catalogo |
 | `assets/rack-designer/rack-designer-extra.js` | permutazioni, alimentazione, campus, sala, NetBox, etichette, distinta |
 | `assets/rack-designer/rack-designer-pro.js` | VLAN, RouterOS, coperture, muri, percorsi, inventario, Snipe-IT, Fluke, modelli, Gist |
+| `assets/rack-designer/rack-designer-projects.js` | più progetti nel browser, versioni con confronto, ricerca globale |
+| `tests/run_tests.py`, `.github/workflows/test.yml` | test automatici (Playwright) eseguiti da GitHub Actions a ogni push |
 | `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
 | `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR delle targhette |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per leggere le planimetrie in PDF |
 | `assets/favicon.svg` | icona |
+
+## Progetti, versioni e ricerca
+
+- **I miei progetti** (icona della cartella accanto al nome, o menu ⋯): più progetti salvati nel browser,
+  con apri, duplica ed elimina. «Nuovo progetto» crea un progetto nuovo senza cancellare quello aperto;
+  importazioni JSON e link condivisi diventano progetti a sé.
+- **Versioni e differenze**: istantanee del progetto (manuali con una descrizione, automatiche quando
+  lo riapri dopo qualche ora), confronto tra due versioni o con lo stato attuale (armadi, elementi,
+  permutazioni raggruppate per intervalli come «B1–B12», locali, tratte, apparati, planimetrie, VLAN),
+  ripristino annullabile e invio delle differenze al registro modifiche di ogni armadio.
+- **Ricerca globale** (lente nella testata, Ctrl+K o /): trova armadi, elementi, prese e tratte per
+  etichetta o locale, apparati in pianta, planimetrie, VLAN, edifici e altri progetti; il MAC si può
+  scrivere anche senza separatori. Invio porta direttamente all'elemento.
+
+## Test
+
+`python tests/run_tests.py` (serve `pip install playwright` e `python -m playwright install chromium`)
+avvia un server locale e controlla le funzioni principali in italiano e in inglese: viste, finestre
+del menu, esportazioni, script RouterOS, progetti, versioni, ricerca e assenza di testo italiano
+nella versione inglese. Lo stesso test gira su GitHub Actions a ogni push (scheda *Actions*).
 
 ## Lingua / Language
 
@@ -124,5 +146,6 @@ Per aggiungere o correggere una traduzione basta modificare il dizionario `D` in
 | ↑ / ↓ | sposta l'elemento selezionato nell'armadio |
 | Canc | elimina l'elemento selezionato |
 | Rotellina, + / − | zoom sulla planimetria |
+| Ctrl+K oppure / | ricerca globale (identificativi, prese, locali, modelli, seriali, MAC, IP) |
 | Ctrl+Z / Ctrl+Y | annulla / ripeti |
 | Esc | annulla calibrazione o posizionamento, deseleziona |

@@ -106,7 +106,7 @@ async def test_core(c):
     await pg.evaluate("S.rear=true;render()"); await pg.evaluate("S.rear=false;S.room=true;render()"); await pg.evaluate("S.room=false;render()")
     check('vista posteriore e sala', not c.errors, '; '.join(c.errors))
     # finestre del menu
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report']:
         await c.menu(m)
         ok = await pg.evaluate("document.getElementById('modal').classList.contains('open')") and not c.errors
         check(f'finestra «{m}»', ok, '; '.join(c.errors))
@@ -226,8 +226,10 @@ async def test_english(c):
     for i in range(await pg.evaluate("document.querySelectorAll('#bay .it').length")):
         await pg.evaluate(f"document.querySelectorAll('#bay .it')[{i}].dispatchEvent(new MouseEvent('click',{{bubbles:true}}))")
         await pg.wait_for_timeout(60); await sweep(f'elemento {i}')
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report']:
         await c.menu(m); await sweep('menu ' + m)
+    await pg.keyboard.press('Escape')
+    await c.menu('umodels'); await pg.click('#mBody [data-ux=mNew]'); await pg.wait_for_timeout(150); await sweep('nuovo modello')
     await pg.keyboard.press('Escape')
     for v in ['plan', 'campus']:
         await pg.click(f'[data-view={v}]'); await pg.wait_for_timeout(300); await sweep('vista ' + v)
@@ -243,11 +245,71 @@ async def test_english(c):
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 
+async def test_tools(c):
+    pg = c.pg
+    print('— modelli personalizzati, archiviazione, piano IP, importazione, relazione')
+    await c.open('it')
+    await pg.click('[data-lt=racks]'); await pg.select_option('#tplPick', 'b-fd24'); await pg.wait_for_timeout(300)
+    await pg.evaluate(BUILD)
+    # modello personalizzato
+    await pg.click('[data-lt=mod]'); await pg.click('[data-ux=mNew]'); await pg.wait_for_timeout(150)
+    await pg.select_option('#umV', '__new'); await pg.fill('#umVn', 'Marca Test'); await pg.fill('#umM', 'SW-Test 24P'); await pg.select_option('#umK', 'sw')
+    await pg.fill('#umRj', '24'); await pg.fill('#umSf', '4'); await pg.check('#umPoe'); await pg.click('[data-ux=mSave]'); await pg.wait_for_timeout(200)
+    mid = await pg.evaluate("Object.values(MODELS).find(m=>m.user&&m.m==='SW-Test 24P')?.id")
+    check('modello personalizzato nel catalogo', bool(mid) and 'SW-Test 24P' in await pg.inner_text('#leftBody'))
+    await pg.evaluate(f"mutate(()=>{{R().items.push(mkModelItem('{mid}',12))}})")
+    check('modello personalizzato salvato nel progetto', await pg.evaluate(f"(P.umodels||[]).some(u=>u.id==='{mid}')"))
+    await pg.evaluate("localStorage.removeItem('ndc-modelli-utente')"); await pg.reload(); await pg.wait_for_function('typeof P!=="undefined" && P && P.racks'); await pg.wait_for_timeout(300)
+    await pg.evaluate("S.rack=P.racks.find(x=>x.items.some(i=>i.kind==='patch')).id;render()")
+    check('modello ricostruito dal progetto', await pg.evaluate(f"!!MODELS['{mid}'] && VENDORS[MODELS['{mid}'].v].n==='Marca Test'"))
+    # archiviazione
+    await pg.evaluate("""()=>{const r=R();const pp=r.items.find(i=>i.kind==='patch');for(let i=3;i<=12;i++)P.devices.push({id:'k'+i,kind:'cam',plan:'plT',x:60*i,y:600,name:'K'+i,rack:r.id,item:pp.id,port:i,model:'f-hikvision-ds-2cd2385fwd-i'});
+      r.items.push(mkModelItem('hikvision-ds-7608ni-k2',8));save();render()}""")
+    k = await pg.evaluate("NDC_tools.cctvCalc()")
+    check('calcolo archiviazione NVR', k['cams'] == 11 and k['need'] > 1 and any(m[0] == 'err' and 'Canali' in m[1] for m in k['msgs']), json.dumps(k['msgs']))
+    # piano IP
+    await pg.evaluate("R().items.find(i=>i.kind==='sw').props.ip='10.10.99.1'")
+    await pg.evaluate("NDC_tools.autoAssign(false)")
+    rows = await pg.evaluate("NDC_tools.ipRows().map(x=>[x.name,x.ip,x.st])")
+    check('assegnazione automatica degli IP', all(r[1] and r[2].startswith('ok') for r in rows) and len({r[1] for r in rows}) == len(rows), str(rows[:4]))
+    check('lease DHCP per RouterOS', re.search(r'add address=10\.10\.99\.\d+ mac-address=AA:BB:CC:00:11:22', await pg.evaluate("NDC_tools.ipRsc()")))
+    await pg.keyboard.press('Escape')
+    # importazione CSV e XLSX
+    lab = await pg.evaluate("rid(R())")
+    csvp = os.path.join(OUT, 'prese.csv')
+    open(csvp, 'w', encoding='utf-8').write(f'Etichetta;Locale\n{lab}.B20;Aula 3.01\nB21;Aula 3.02\nZ1;errore\n')
+    async with pg.expect_file_chooser() as fc:
+        await c.menu('importOut')
+    await (await fc.value).set_files(csvp); await pg.wait_for_timeout(400)
+    await pg.click('[data-ux=imApply]'); await pg.wait_for_timeout(200)
+    notes = await pg.evaluate("R().items.filter(i=>i.kind==='patch').map(i=>[i.ports[20]?.note,i.ports[21]?.note])")
+    check('importazione elenco prese da CSV', ['Aula 3.01', 'Aula 3.02'] in notes, str(notes))
+    try:
+        import openpyxl
+        wb = openpyxl.Workbook(); ws = wb.active; ws.append(['Presa', 'Stanza']); ws.append(['B22', 'Laboratorio']); xp = os.path.join(OUT, 'prese.xlsx'); wb.save(xp)
+        async with pg.expect_file_chooser() as fc:
+            await c.menu('importOut')
+        await (await fc.value).set_files(xp); await pg.wait_for_timeout(500)
+        await pg.click('[data-ux=imApply]'); await pg.wait_for_timeout(200)
+        check('importazione elenco prese da Excel', await pg.evaluate("R().items.some(i=>i.kind==='patch'&&i.ports[22]?.note==='Laboratorio')"))
+    except ImportError:
+        pass
+    # relazione
+    await pg.evaluate("window._np=0;window.print=function(){window._np++};0")
+    await c.menu('report'); await pg.fill('#rpC', 'Committente di prova'); await pg.click('[data-ux=rpGo]')
+    await pg.wait_for_function('window._np>0', timeout=15000)
+    secs = await pg.evaluate("[...document.querySelectorAll('#print .rp-sec')].map(s=>s.className.split(' ')[1])")
+    txt = await pg.evaluate("document.getElementById('print').innerText")
+    check('relazione completa', 'Committente di prova' in txt and {'rp-pl', 'rp-rk', 'rp-bom', 'rp-ip', 'rp-cc', 'rp-is'} <= set(secs) and txt.count('Foglio di armadio') >= 2, str(secs))
+    await pg.emulate_media(media='print'); await pg.screenshot(path=os.path.join(OUT, 'relazione.png')); await pg.emulate_media(media='screen')
+    check('nessun errore', not c.errors, '; '.join(c.errors))
+
+
 async def main():
     srv, base = serve()
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for fn in (test_core, test_projects, test_english):
+        for fn in (test_core, test_projects, test_tools, test_english):
             pg = await b.new_page(viewport={'width': 1500, 'height': 920}, accept_downloads=True)
             c = Ctx(pg, base)
             pg.on('pageerror', lambda e, c=c: c.errors.append(str(e)))

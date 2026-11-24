@@ -22,7 +22,7 @@ jobs:
           python-version: '3.12'
       - name: Installa Playwright
         run: |
-          pip install playwright
+          pip install playwright openpyxl
           python -m playwright install --with-deps chromium
       - name: Test in italiano e in inglese
         run: python tests/run_tests.py

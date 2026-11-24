@@ -24,6 +24,7 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer-extra.js` | permutazioni, alimentazione, campus, sala, NetBox, etichette, distinta |
 | `assets/rack-designer/rack-designer-pro.js` | VLAN, RouterOS, coperture, muri, percorsi, inventario, Snipe-IT, Fluke, modelli, Gist |
 | `assets/rack-designer/rack-designer-projects.js` | più progetti nel browser, versioni con confronto, ricerca globale |
+| `assets/rack-designer/rack-designer-tools.js` | modelli personalizzati, archiviazione videosorveglianza, piano IP, importazione prese da Excel/CSV, relazione completa |
 | `tests/run_tests.py`, `.github/workflows/test.yml` | test automatici (Playwright) eseguiti da GitHub Actions a ogni push |
 | `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
@@ -50,6 +51,21 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 avvia un server locale e controlla le funzioni principali in italiano e in inglese: viste, finestre
 del menu, esportazioni, script RouterOS, progetti, versioni, ricerca e assenza di testo italiano
 nella versione inglese. Lo stesso test gira su GitHub Actions a ogni push (scheda *Actions*).
+
+## Strumenti
+
+- **Modelli personalizzati** (scheda Modelli → «+ Nuovo modello», o menu ⋯): marca (anche nuova), nome,
+  tipo, U, porte RJ45/SFP, PoE e descrizione. Restano nel browser e vengono salvati anche nei progetti
+  che li usano, così funzionano dopo un'esportazione, un link condiviso o un Gist.
+- **Archiviazione videosorveglianza**: dalle telecamere in pianta (risoluzione dal modello) e dalle
+  impostazioni (codec, fps, qualità, registrazione continua o su movimento, ore, giorni) calcola bitrate,
+  banda in ingresso e TB necessari; li confronta con canali e dischi degli NVR/NAS scelti (TB per disco, RAID).
+- **Piano indirizzi IP**: VLAN per tipo di apparato, assegnazione automatica degli IP mancanti (salta
+  gateway e indirizzi usati), controllo di duplicati e subnet, CSV e lease DHCP statiche per RouterOS.
+- **Importa elenco prese (Excel/CSV)**: file .xlsx o CSV con etichetta (BA.FA1.C12 o C12) e locale;
+  anteprima con l'esito di ogni riga, poi i locali vengono scritti sulle prese e nel registro modifiche.
+- **Relazione completa**: copertina con riepilogo e indice, planimetrie, fogli di armadio, distinta
+  materiali, piano IP, archiviazione e segnalazioni, da stampare o salvare in PDF.
 
 ## Lingua / Language
 

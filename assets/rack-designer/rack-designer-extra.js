@@ -546,6 +546,6 @@ $('#moreMenu .menu-lista').addEventListener('click',e=>{const m=e.target.closest
   ({perms:openPerms,bom:()=>openBom('project'),labels:openLabels,netbox:openNetbox,campus:()=>{S.view='campus';render()}})[m]?.()});
 
 /* ---------------- avvio ---------------- */
-window.NDC={perms,swUse,swPorts,swPortName,isSwitchLike,spec,power,backbones,extraSheet,qrSvg,qrText,csv,letters,bInfo,COLORI,normX};
+window.NDC={perms,swUse,swPorts,swPortName,isSwitchLike,spec,power,backbones,extraSheet,qrSvg,qrText,csv,letters,bInfo,COLORI,normX,bom};
 (function go(){if(!P){setTimeout(go,30);return}normX(P);render()})();
 })();

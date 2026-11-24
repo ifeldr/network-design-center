@@ -474,3 +474,31 @@ details.tpl summary{cursor:pointer;color:var(--tenue);font-size:13.5px}
 .menu-lista small{color:var(--tenue);margin-left:6px}
 .flash{animation:ndcflash 1.4s ease-out}
 @keyframes ndcflash{0%,40%{box-shadow:0 0 0 3px var(--accento),0 0 18px var(--accento)}100%{box-shadow:0 0 0 0 transparent}}
+/* strumenti: modelli, archiviazione, IP, importazione, relazione */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:4px 14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 14px}
+@media (max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+.grid2 .f,.grid3 .f{display:flex;flex-direction:column;gap:4px;margin:4px 0}
+.grid2 .f input,.grid2 .f select,.grid2 .f textarea,.grid3 .f input,.grid3 .f select{width:100%}
+.esito{padding:8px 12px;border-radius:.5rem;margin:6px 0;border-left:4px solid var(--info);background:var(--pannello2)}
+.esito.ok{border-color:var(--ok)}.esito.warn{border-color:var(--warn)}.esito.err{border-color:var(--err)}
+table.vtab{width:100%;border-collapse:collapse;font-size:13.5px}
+table.vtab th{text-align:left;color:var(--tenue);font-weight:600;font-size:12.5px;padding:6px 4px;border-bottom:1px solid var(--linea)}
+table.vtab td{border-bottom:1px solid var(--linea);vertical-align:middle}
+table.vtab select{height:30px;border:1px solid var(--linea2);border-radius:.375rem;background:var(--pannello2);color:inherit}
+.cc-x{display:inline-flex;align-items:center;gap:4px;padding:2px 6px;border:1px solid var(--linea);border-radius:.5rem}
+.cc-x input{height:28px;border:1px solid var(--linea2);border-radius:.375rem;padding:0 4px;background:var(--pannello2)}
+.mono{font-family:var(--mono)}
+@media print{
+  #print .rp-sec{break-before:page}
+  #print .rp-cover{min-height:250mm}
+  #print .rp-k{font:600 12px sans-serif;text-transform:uppercase;letter-spacing:.12em;color:#555;margin-top:30mm}
+  #print .rp-t{font-size:30px!important;margin:6px 0 4px!important}
+  #print .rp-c{font-size:16px;margin-bottom:10px}
+  #print .rp-n{font-size:12px;max-width:150mm}
+  #print .rp-meta{width:auto!important;margin:14px 0}
+  #print .rp-meta td{border:0!important;padding:2px 14px 2px 0}
+  #print .rp-toc{font-size:12px;line-height:1.7}
+}
+.grid2 .f,.grid3 .f{display:flex}
+.grid2 .f label,.grid3 .f label{text-align:left;color:var(--tenue);font-size:13px}

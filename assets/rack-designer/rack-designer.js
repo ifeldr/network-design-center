@@ -70,7 +70,9 @@ const VENDORS={
   aruba:{n:'Aruba',logo:'aruba',c:'#ff8300'},
   cisco:{n:'Cisco',logo:'cisco',c:'#049fd9'},
   zte:{n:'ZTE',logo:'ZTE',c:'#0066b3'},
-  ruckus:{n:'Ruckus',logo:'RUCKUS',c:'#f58025'}
+  ruckus:{n:'Ruckus',logo:'RUCKUS',c:'#f58025'},
+  synology:{n:'Synology',logo:'Synology',c:'#3a4b5c'},
+  dell:{n:'Dell',logo:'DELL',c:'#007db8'}
 };
 const RACK_MODELS=[
   // Ubiquiti
@@ -233,7 +235,101 @@ const RACK_MODELS=[
   ['ruckus','ICX 8200-24ZP','sw',1,24,4,true,'2,5 GbE PoE++'],
   ['ruckus','ICX 8200-48','sw',1,48,4,false,'uplink SFP28'],
   ['ruckus','ICX 8200-48P','sw',1,48,4,true,'uplink SFP28'],
-  ['ruckus','SmartZone 144 (SZ-144)','srv',1,4,2,false,'controller Wi-Fi']
+  ['ruckus','SmartZone 144 (SZ-144)','srv',1,4,2,false,'controller Wi-Fi'],
+  // Synology
+  ['synology','RS422+','srv',1,0,0,false,'4 dischi'],
+  ['synology','RS822+','srv',1,0,0,false,'4 dischi'],
+  ['synology','RS822RP+','srv',1,0,0,false,'4 dischi, alimentazione ridondata'],
+  ['synology','RS1619xs+','srv',1,0,0,false,'4 dischi'],
+  ['synology','RS820+','srv',1,0,0,false,'4 dischi'],
+  ['synology','RS820RP+','srv',1,0,0,false,'4 dischi, alimentazione ridondata'],
+  ['synology','RS819','srv',1,0,0,false,'4 dischi'],
+  ['synology','RS217','srv',1,0,0,false,'2 dischi'],
+  ['synology','RS1221+','srv',2,0,0,false,'8 dischi'],
+  ['synology','RS1221RP+','srv',2,0,0,false,'8 dischi, alimentazione ridondata'],
+  ['synology','RS1219+','srv',2,0,0,false,'8 dischi'],
+  ['synology','RS2421+','srv',2,0,0,false,'12 dischi'],
+  ['synology','RS2421RP+','srv',2,0,0,false,'12 dischi, alimentazione ridondata'],
+  ['synology','RS2423+','srv',2,0,0,false,'12 dischi'],
+  ['synology','RS2423RP+','srv',2,0,0,false,'12 dischi, alimentazione ridondata'],
+  ['synology','RS2418+','srv',2,0,0,false,'12 dischi'],
+  ['synology','RS3621xs+','srv',2,0,0,false,'12 dischi'],
+  ['synology','RS3621RPxs','srv',2,0,0,false,'12 dischi, alimentazione ridondata'],
+  ['synology','RS3618xs','srv',2,0,0,false,'12 dischi'],
+  ['synology','RS2825RP+','srv',3,0,0,false,'16 dischi, alimentazione ridondata'],
+  ['synology','RS2821RP+','srv',3,0,0,false,'16 dischi, alimentazione ridondata'],
+  ['synology','RS2818RP+','srv',3,0,0,false,'16 dischi, alimentazione ridondata'],
+  ['synology','RS4021xs+','srv',3,0,0,false,'16 dischi'],
+  ['synology','SA3400','srv',2,0,0,false,'12 dischi'],
+  ['synology','SA3410','srv',2,0,0,false,'12 dischi'],
+  ['synology','SA3610','srv',2,0,0,false,'12 dischi'],
+  ['synology','SA6400','srv',2,0,0,false,'12 dischi'],
+  ['synology','SA3200D','srv',2,0,0,false,'12 dischi, doppio controller'],
+  ['synology','UC3200','srv',2,0,0,false,'SAN 12 dischi, doppio controller'],
+  ['synology','UC3400','srv',2,0,0,false,'SAN 12 dischi, doppio controller'],
+  ['synology','FS2500','srv',1,0,0,false,'all-flash 12 SSD'],
+  ['synology','FS3410','srv',2,0,0,false,'all-flash 24 SSD'],
+  ['synology','FS3600','srv',2,0,0,false,'all-flash 24 SSD'],
+  ['synology','FS6400','srv',2,0,0,false,'all-flash 24 SSD'],
+  ['synology','HD6500','srv',4,0,0,false,'60 dischi'],
+  ['synology','RX418','srv',1,0,0,false,'espansione 4 dischi'],
+  ['synology','RX1217','srv',2,0,0,false,'espansione 12 dischi'],
+  ['synology','RX1217RP','srv',2,0,0,false,'espansione 12 dischi'],
+  ['synology','RX1222sas','srv',2,0,0,false,'espansione 12 dischi SAS'],
+  ['synology','RX1223RP','srv',2,0,0,false,'espansione 12 dischi'],
+  ['synology','RX1225RP','srv',2,0,0,false,'espansione 12 dischi'],
+  ['synology','RX6022sas','srv',4,0,0,false,'espansione 60 dischi SAS'],
+  // Dell
+  ['dell','PowerEdge R470','srv',1,0,0,false,'server 17ª gen., Intel'],
+  ['dell','PowerEdge R570','srv',2,0,0,false,'server 17ª gen., Intel'],
+  ['dell','PowerEdge R670','srv',1,0,0,false,'server 17ª gen., Intel'],
+  ['dell','PowerEdge R770','srv',2,0,0,false,'server 17ª gen., Intel'],
+  ['dell','PowerEdge R770AP','srv',2,0,0,false,'server 17ª gen., Intel'],
+  ['dell','PowerEdge R6715','srv',1,0,0,false,'server 17ª gen., AMD'],
+  ['dell','PowerEdge R6725','srv',1,0,0,false,'server 17ª gen., AMD'],
+  ['dell','PowerEdge R7715','srv',2,0,0,false,'server 17ª gen., AMD'],
+  ['dell','PowerEdge R7725','srv',2,0,0,false,'server 17ª gen., AMD'],
+  ['dell','PowerEdge R7725xd','srv',2,0,0,false,'server 17ª gen., AMD'],
+  ['dell','PowerEdge R260','srv',1,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R360','srv',1,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R660','srv',1,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R660xs','srv',1,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R760','srv',2,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R760xs','srv',2,0,0,false,'server 16ª gen., Intel'],
+  ['dell','PowerEdge R760xa','srv',2,0,0,false,'server 16ª gen., GPU'],
+  ['dell','PowerEdge R760xd2','srv',2,0,0,false,'server 16ª gen., storage'],
+  ['dell','PowerEdge R860','srv',2,0,0,false,'server 16ª gen., 4 socket'],
+  ['dell','PowerEdge R960','srv',4,0,0,false,'server 16ª gen., 4 socket'],
+  ['dell','PowerEdge R6615','srv',1,0,0,false,'server 16ª gen., AMD'],
+  ['dell','PowerEdge R6625','srv',1,0,0,false,'server 16ª gen., AMD'],
+  ['dell','PowerEdge R7615','srv',2,0,0,false,'server 16ª gen., AMD'],
+  ['dell','PowerEdge R7625','srv',2,0,0,false,'server 16ª gen., AMD'],
+  ['dell','PowerEdge R250','srv',1,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R350','srv',1,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R450','srv',1,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R550','srv',2,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R650','srv',1,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R650xs','srv',1,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R750','srv',2,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R750xs','srv',2,0,0,false,'server 15ª gen., Intel'],
+  ['dell','PowerEdge R750xa','srv',2,0,0,false,'server 15ª gen., GPU'],
+  ['dell','PowerEdge R6515','srv',1,0,0,false,'server 15ª gen., AMD'],
+  ['dell','PowerEdge R6525','srv',1,0,0,false,'server 15ª gen., AMD'],
+  ['dell','PowerEdge R7515','srv',2,0,0,false,'server 15ª gen., AMD'],
+  ['dell','PowerEdge R7525','srv',2,0,0,false,'server 15ª gen., AMD'],
+  ['dell','PowerEdge R240','srv',1,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R340','srv',1,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R440','srv',1,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R540','srv',2,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R640','srv',1,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R740','srv',2,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R740xd','srv',2,0,0,false,'server 14ª gen.'],
+  ['dell','PowerEdge R940','srv',3,0,0,false,'server 14ª gen., 4 socket'],
+  ['dell','PowerVault ME4012','srv',2,0,0,false,'storage 12 dischi'],
+  ['dell','PowerVault ME4024','srv',2,0,0,false,'storage 24 dischi'],
+  ['dell','PowerVault ME5012','srv',2,0,0,false,'storage 12 dischi'],
+  ['dell','PowerVault ME5024','srv',2,0,0,false,'storage 24 dischi'],
+  ['dell','PowerVault ME5084','srv',5,0,0,false,'storage 84 dischi']
 ];
 const FIELD_MODELS=[
   // Ubiquiti — access point
@@ -264,14 +360,19 @@ const FIELD_MODELS=[
   ['ruckus','R350','ap','Wi-Fi 6'],['ruckus','R550','ap','Wi-Fi 6'],['ruckus','R650','ap','Wi-Fi 6'],['ruckus','R750','ap','Wi-Fi 6'],['ruckus','R850','ap','Wi-Fi 6'],
   ['ruckus','R560','ap','Wi-Fi 6E'],['ruckus','R670','ap','Wi-Fi 7'],['ruckus','R770','ap','Wi-Fi 7'],['ruckus','H350','ap','Wi-Fi 6 a parete'],['ruckus','H550','ap','Wi-Fi 6 a parete'],['ruckus','T350c','ap','Wi-Fi 6 esterno'],['ruckus','T750','ap','Wi-Fi 6 esterno'],
   // ZTE
-  ['zte','ZXHN F6640','altro','ONT fibra Wi-Fi 6'],['zte','ZXHN F680','altro','ONT fibra Wi-Fi 5'],['zte','ZXHN H3600','altro','router Wi-Fi 6'],['zte','ZXHN H388X','altro','router FWA']
+  ['zte','ZXHN F6640','altro','ONT fibra Wi-Fi 6'],['zte','ZXHN F680','altro','ONT fibra Wi-Fi 5'],['zte','ZXHN H3600','altro','router Wi-Fi 6'],['zte','ZXHN H388X','altro','router FWA'],
+  // Synology
+  ['synology','DS124','altro','NAS da tavolo, 1 disco'],['synology','DS223','altro','NAS da tavolo, 2 dischi'],['synology','DS223j','altro','NAS da tavolo, 2 dischi'],['synology','DS224+','altro','NAS da tavolo, 2 dischi'],['synology','DS225+','altro','NAS da tavolo, 2 dischi'],['synology','DS725+','altro','NAS da tavolo, 2 dischi'],['synology','DS423','altro','NAS da tavolo, 4 dischi'],['synology','DS423+','altro','NAS da tavolo, 4 dischi'],['synology','DS425+','altro','NAS da tavolo, 4 dischi'],['synology','DS723+','altro','NAS da tavolo, 2 dischi'],['synology','DS923+','altro','NAS da tavolo, 4 dischi'],['synology','DS925+','altro','NAS da tavolo, 4 dischi'],['synology','DS1522+','altro','NAS da tavolo, 5 dischi'],['synology','DS1525+','altro','NAS da tavolo, 5 dischi'],['synology','DS1621+','altro','NAS da tavolo, 6 dischi'],['synology','DS1821+','altro','NAS da tavolo, 8 dischi'],['synology','DS1825+','altro','NAS da tavolo, 8 dischi'],['synology','DS1823xs+','altro','NAS da tavolo, 8 dischi'],['synology','DS2422+','altro','NAS da tavolo, 12 dischi'],['synology','DS3622xs+','altro','NAS da tavolo, 12 dischi'],['synology','DS620slim','altro','NAS da tavolo, 6 dischi 2,5″'],
+  ['synology','DVA1622','altro','NVR da tavolo, 2 dischi'],['synology','DVA3221','altro','NVR da tavolo, 4 dischi'],['synology','DVA3219','altro','NVR da tavolo, 4 dischi'],['synology','NVR1218','altro','NVR da tavolo, 2 dischi'],
+  ['synology','BC500','cam','bullet 5 MP'],['synology','TC500','cam','turret 5 MP'],['synology','BC800Z','cam','bullet 4K varifocale'],['synology','CC400W','cam','Wi-Fi 4 MP da interno'],
+  ['synology','RT6600ax','ap','router Wi-Fi 6'],['synology','RT2600ac','ap','router Wi-Fi 5'],['synology','WRX560','ap','router Wi-Fi 6 mesh']
 ];
 const mslug=s=>s.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const MODELS={};
-RACK_MODELS.forEach(([v,m,k,h,rj,sfp,poe,note])=>{const id=v+'-'+mslug(m);MODELS[id]={id,v,m,k,h,rj,sfp,poe,note,rack:true}});
-FIELD_MODELS.forEach(([v,m,k,note])=>{const id='f-'+v+'-'+mslug(m);MODELS[id]={id,v,m,k,note,rack:false}});
+RACK_MODELS.forEach(([v,m,k,h,rj,sfp,poe,note])=>{let id=v+'-'+mslug(m);if(MODELS[id])id+=m.includes('+')?'-plus':'-2';MODELS[id]={id,v,m,k,h,rj,sfp,poe,note,rack:true}});
+FIELD_MODELS.forEach(([v,m,k,note])=>{let id='f-'+v+'-'+mslug(m);if(MODELS[id])id+=m.includes('+')?'-plus':'-2';MODELS[id]={id,v,m,k,note,rack:false}});
 const mName=m=>`${VENDORS[m.v].n.split(' / ')[0]} ${m.m}`;
-const mSpec=m=>m.rack?[`${m.h} U`,m.rj?`${m.rj} RJ45`:'',m.sfp?`${m.sfp} SFP`:'',m.poe?'PoE':''].filter(Boolean).join(' · '):m.note;
+const mSpec=m=>m.rack&&m.k==='srv'?`${m.h} U · ${m.note}`:m.rack?[`${m.h} U`,m.rj?`${m.rj} RJ45`:'',m.sfp?`${m.sfp} SFP`:'',m.poe?'PoE':''].filter(Boolean).join(' · '):m.note;
 function mkModelItem(id,pos=1){const m=MODELS[id];const it=mkItem(m.k,pos,m.k==='patch'?{ports:m.rj,model:id}:{ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:id},{name:mName(m)});it.h=hOf(it);return it}
 
 
@@ -753,7 +854,7 @@ function itemHtml(r,it){
   let props='';
   const md=p.model&&MODELS[p.model];
   const msel=it.kind!=='patch'||md?`<div class="f"><label>Modello</label><select data-f="model"><option value="">Generico</option>${Object.keys(VENDORS).map(v=>{const ms=Object.values(MODELS).filter(m=>m.rack&&m.v===v&&m.k===it.kind);return ms.length?`<optgroup label="${esc(VENDORS[v].n)}">${ms.map(m=>`<option value="${m.id}" ${m.id===p.model?'selected':''}>${esc(m.m)}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>`:'';
-  if(md&&it.kind!=='patch')props=msel+`<div class="kv"><span>Marca</span><b>${esc(VENDORS[md.v].n)}</b></div><div class="kv"><span>Porte</span><b>${esc(mSpec(md))}</b></div>${md.note?`<div class="kv"><span>Note</span><b>${esc(md.note)}</b></div>`:''}`;
+  if(md&&it.kind!=='patch')props=msel+`<div class="kv"><span>Marca</span><b>${esc(VENDORS[md.v].n)}</b></div><div class="kv"><span>${md.k==='srv'?'Caratteristiche':'Porte'}</span><b>${esc(mSpec(md))}</b></div>${md.note&&md.k!=='srv'?`<div class="kv"><span>Note</span><b>${esc(md.note)}</b></div>`:''}`;
   else switch(it.kind){
     case 'fo':props=`<div class="f"><label>Uso</label>${sel('use',p.use,[['dorsale','Dorsale'],['distribuzione','Distribuzione'],['mista','Misto (non conforme)']])}</div>
       <div class="f"><label>Verso</label>${sel('dir',p.dir,[['arrivo','Arrivo'],['partenza','Partenza / rimando']])}</div>

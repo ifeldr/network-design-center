@@ -1126,7 +1126,32 @@ const D={
 "differenze": "differences",
 "aperto": "open",
 "elemento": "item",
-"» del": "» of"
+"» del": "» of",
+"RouterBOARD da tavolo, 5 porte Gigabit + 5 Fast Ethernet": "desktop RouterBOARD, 5 Gigabit + 5 Fast Ethernet ports",
+"RouterBOARD, 5 porte Gigabit + 5 Fast Ethernet": "RouterBOARD, 5 Gigabit + 5 Fast Ethernet ports",
+"SwOS, da tavolo": "SwOS, desktop",
+"10 SFP + 1 SFP+, da tavolo": "10 SFP + 1 SFP+, desktop",
+"8 porte PoE, da tavolo": "8 PoE ports, desktop",
+"10/100, 2 porte combo Gigabit, da tavolo": "10/100, 2 Gigabit combo ports, desktop",
+"10/100, 2 porte combo Gigabit": "10/100, 2 Gigabit combo ports",
+"2 porte combo SFP, da tavolo": "2 SFP combo ports, desktop",
+"2 porte combo SFP": "2 SFP combo ports",
+"4 porte combo SFP, slot per moduli 10G e stack": "4 SFP combo ports, slots for 10G and stacking modules",
+"4 porte combo SFP, slot per moduli 10G": "4 SFP combo ports, 10G module slots",
+"4 porte combo SFP": "4 SFP combo ports",
+"slot per moduli 10G e stack": "slots for 10G and stacking modules",
+"uplink SFP+, stack": "SFP+ uplinks, stacking",
+"router Wi-Fi 4": "Wi-Fi 4 router",
+"Wi-Fi 4 a soffitto": "Wi-Fi 4 ceiling",
+"Wi-Fi 4 esterno": "Wi-Fi 4 outdoor",
+"Wi-Fi 4 portatile": "portable Wi-Fi 4",
+"ponte radio 5 GHz": "5 GHz radio link",
+"router 5 porte + SFP": "5-port router + SFP",
+"router 5 porte PoE + SFP": "5-port PoE router + SFP",
+"router 5 porte PoE": "5-port PoE router",
+"switch 5 porte + SFP da scrivania": "5-port + SFP desktop switch",
+"switch 8 porte + 2× SFP+ da tavolo": "8-port + 2× SFP+ desktop switch",
+"switch 5× SFP da tavolo": "desktop 5× SFP switch"
 };
 /* lower/upper-case variants */
 for(const k of Object.keys(D)){const v=D[k];const c=k.charAt(0);

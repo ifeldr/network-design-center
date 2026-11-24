@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="assets/rack-designer/rack-designer.css?v=6">
+<link rel="stylesheet" href="assets/rack-designer/rack-designer.css?v=7">
 <script>try{var m=localStorage.getItem('rd-mode');if(m)document.documentElement.setAttribute('data-mode',m)}catch(e){}</script>
 </head>
 <body>
@@ -29,6 +29,7 @@
   <nav class="viste" aria-label="Vista">
     <button data-view="rack" class="on"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="1.5"/><path d="M8 7h8M8 11h8M8 15h8"/></svg><span>Armadio</span></button>
     <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M3 11h8V4M11 15v5M15 4v7h6"/></svg><span>Planimetria</span></button>
+    <button data-view="campus"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V8l5-3v16M10 21V3l9 4v14"/><path d="M13 10h3M13 14h3"/></svg><span>Campus</span></button>
   </nav>
   <div class="sp"></div>
   <button class="btn icona" id="undoBtn" title="Annulla (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
@@ -41,6 +42,10 @@
     <div class="menu-lista">
       <button data-m="print" class="show-md">Stampa</button>
       <button data-m="topo">Topologia della rete</button>
+      <button data-m="perms">Permutazioni dell'armadio</button>
+      <button data-m="bom">Distinta materiali</button>
+      <button data-m="labels">Etichette per etichettatrice</button>
+      <button data-m="netbox">Esporta per NetBox</button>
       <button data-m="csv">Esporta etichette (CSV per IRM)</button>
       <button data-m="json">Esporta progetto (JSON)</button>
       <button data-m="import">Importa progetto (JSON)…</button>
@@ -78,6 +83,8 @@
 <div class="modale" id="modal"><div class="dialogo"><div class="dialogo-t"><h2 id="mTitle"></h2><button class="btn icona" data-close aria-label="Chiudi">✕</button></div><div class="dialogo-c" id="mBody"></div></div></div>
 <div class="toast" id="toast" role="status"></div>
 <div id="print"></div>
-<script src="assets/rack-designer/rack-designer.js?v=6"></script>
+<script src="assets/rack-designer/vendor/qrcode.js"></script>
+<script src="assets/rack-designer/rack-designer.js?v=7"></script>
+<script src="assets/rack-designer/rack-designer-extra.js?v=7"></script>
 </body>
 </html>

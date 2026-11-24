@@ -20,7 +20,9 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Rack Desi
 |---|---|
 | `index.html` | pagina, testata e piè di pagina |
 | `assets/rack-designer/rack-designer.css` | stile (colori del tema Chirpy, modalità chiara e scura) |
-| `assets/rack-designer/rack-designer.js` | logica: regole, validatore, etichette, planimetrie |
+| `assets/rack-designer/rack-designer.js` | logica: regole, validatore, etichette, planimetrie, catalogo |
+| `assets/rack-designer/rack-designer-extra.js` | permutazioni, alimentazione, campus, sala, NetBox, etichette, distinta |
+| `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR delle targhette |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per leggere le planimetrie in PDF |
 | `assets/favicon.svg` | icona |
 
@@ -46,6 +48,24 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Rack Desi
 - Ogni modello a rack ha altezza in U (gli apparati da 1,5 U occupano 2 U), porte RJ45/SFP e PoE dove
   pubblicati; i passacavi di marca vengono riusati dall'auto-organizzazione.
 - Il catalogo è negli elenchi `RACK_MODELS` / `FIELD_MODELS` di `rack-designer.js`: un modello = una riga.
+
+**Documentazione e controlli**
+- Permutazioni presa → porta dello switch con colore della bretella e VLAN; tabella stampabile e CSV;
+  segnalazione delle porte switch usate due volte.
+- Bilancio di alimentazione: consumo stimato, calore in BTU/h, budget PoE degli switch rispetto agli
+  access point e alle telecamere collegati, carico e autonomia indicativa degli UPS.
+- Peso rispetto alla portata dell'armadio, profondità degli apparati rispetto all'armadio, vista posteriore.
+  Consumi, pesi e profondità sono stime per tipo di apparato e si correggono nei dati tecnici di ciascuno.
+- Vista Sala: gli armadi dello stesso piano affiancati.
+- Vista Campus: edifici con nome, descrizione e piani, collegamenti tra edifici, prese libere per piano,
+  suggerimento della sequenza antioraria delle lettere e rinomina automatica degli identificativi.
+- Dorsali tra armadi disegnate in planimetria con la lunghezza stimata (rame oltre 90 m = errore).
+- QR sulla targhetta dell'armadio (apre l'armadio in NetBox se ne imposti l'indirizzo) e registro modifiche,
+  entrambi anche nel foglio di armadio.
+- Distinta materiali (progetto o armadio) con apparati, bretelle, prese a muro e matasse di cavo.
+- Etichette per Brother P-touch Editor e Dymo Connect (CSV).
+- Esportazione per NetBox: produttori, ruoli, tipi di dispositivo (YAML), sito, location, armadi,
+  dispositivi e cavi (permutazioni e tratte tra armadi), da importare nell'ordine indicato.
 
 **Vista Planimetria**
 - Carica la pianta di un piano: PNG, JPG, WebP, SVG o PDF (si sceglie la pagina).

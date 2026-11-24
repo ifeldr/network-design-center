@@ -20,19 +20,23 @@ dal telefono e alla relazione finale in PDF.
 7. [Permutazioni, alimentazione e controlli](#permutazioni-alimentazione-e-controlli)
 8. [Rete logica: VLAN, indirizzi IP, RouterOS](#rete-logica-vlan-indirizzi-ip-routeros)
 9. [Inventario, foto e certificazioni](#inventario-foto-e-certificazioni)
-10. [Videosorveglianza](#videosorveglianza)
-11. [Etichette, distinta e relazione](#etichette-distinta-e-relazione)
-12. [Esportazioni e integrazioni](#esportazioni-e-integrazioni)
-13. [Progetti, versioni e ricerca](#progetti-versioni-e-ricerca)
-14. [Sopralluogo da telefono](#sopralluogo-da-telefono)
-15. [Confronto progetto ↔ realtà](#confronto-progetto--realtà)
-16. [Selezione multipla, copia e incolla](#selezione-multipla-copia-e-incolla)
-17. [Backup e dati](#backup-e-dati)
-18. [Scorciatoie da tastiera](#scorciatoie-da-tastiera)
-19. [Lingua / Language](#lingua--language)
-20. [Struttura del repository](#struttura-del-repository)
-21. [Test automatici](#test-automatici)
-22. [Pubblicazione](#pubblicazione)
+10. [Scadenze](#scadenze)
+11. [Videosorveglianza](#videosorveglianza)
+12. [Etichette, distinta e relazione](#etichette-distinta-e-relazione)
+13. [Schede dei locali](#schede-dei-locali)
+14. [Esportazioni e integrazioni](#esportazioni-e-integrazioni)
+15. [Sincronizzazione con NetBox e Snipe-IT](#sincronizzazione-con-netbox-e-snipe-it)
+16. [Progetti, versioni e ricerca](#progetti-versioni-e-ricerca)
+17. [Sopralluogo da telefono](#sopralluogo-da-telefono)
+18. [Confronto progetto ↔ realtà](#confronto-progetto--realtà)
+19. [Selezione multipla, copia e incolla](#selezione-multipla-copia-e-incolla)
+20. [Backup e dati](#backup-e-dati)
+21. [Scorciatoie da tastiera](#scorciatoie-da-tastiera)
+22. [Accessibilità](#accessibilità)
+23. [Lingua / Language](#lingua--language)
+24. [Struttura del repository](#struttura-del-repository)
+25. [Test automatici](#test-automatici)
+26. [Pubblicazione](#pubblicazione)
 
 ---
 
@@ -44,7 +48,7 @@ browser e i dati restano sul dispositivo.
 - Progetti, versioni, modelli e impostazioni sono salvati nel browser (localStorage).
 - Planimetrie e foto sono nel database del browser (IndexedDB).
 - Escono dal browser solo i dati che decidi tu di inviare: GitHub Gist con il tuo token, file esportati,
-  link condivisibili. L'unica richiesta esterna automatica è quella dei caratteri della pagina (Google Fonts).
+  link condivisibili, sincronizzazione con i tuoi server NetBox e Snipe-IT. L'unica richiesta esterna automatica è quella dei caratteri della pagina (Google Fonts).
 - Si può installare come app («Installa» nel browser o «Aggiungi a schermata Home» sul telefono) e
   funziona anche senza rete; con la connessione usa sempre la versione più recente.
 - Stile e colori sono quelli del sito principale (tema Chirpy, carattere Source Sans 3), con modalità
@@ -84,6 +88,9 @@ Tutto si annulla con Ctrl+Z (⌘Z su Mac).
   - tratte tra armadi `ABC.DEF.G`, con marcatura del lato remoto.
 - **Proprietà** di ogni armadio: tipo, edificio, piano, altezza, profondità, portata, sala server,
   esterno, telai numerati, note IRM, foto, posizione in planimetria.
+- **Vista 3D** (pulsante «3D» accanto a Retro e Sala): l'armadio con ogni apparato alla sua altezza in U e
+  profondità; si ruota trascinando, si ingrandisce con la rotellina, ha le inquadrature frontale, laterale,
+  prospettiva e retro. In rosso gli apparati che arrivano al fondo; un clic seleziona l'apparato.
 - **Vista posteriore** con le profondità degli apparati e **targhetta con QR** (apre l'armadio in NetBox se
   ne imposti l'indirizzo).
 - **Modelli di armadio**: tre predefiniti e quelli che salvi tu, riutilizzabili in tutti i progetti.
@@ -148,6 +155,11 @@ meno recenti ancora installati.
   segnalazione delle porte usate due volte.
 - **Bilancio di alimentazione**: consumo stimato, calore in BTU/h, budget PoE degli switch rispetto agli
   apparati collegati, carico e autonomia indicativa degli UPS.
+- **PoE per classe**: ogni access point, telecamera o altro apparato in pianta ha il consumo tipico del suo
+  modello (es. Wi-Fi 7 ≈ 25 W, PTZ ≈ 25 W) e la classe PoE (0–8), modificabili. Per gli switch PoE si indica lo
+  standard massimo per porta (802.3af, 802.3at, 802.3bt 60 W o 90 W, riconosciuto dal modello quando
+  possibile): se un apparato collegato chiede una classe superiore, il validatore segnala un errore con la
+  presa e la porta interessate.
 - **Peso e profondità** rispetto a portata e profondità dell'armadio. Consumi, pesi e profondità sono stime
   per tipo di apparato e si correggono nei dati tecnici di ciascuno.
 - **Conformità** con punteggio per armadio e per planimetria; elenco delle segnalazioni nella scheda dedicata.
@@ -173,6 +185,22 @@ meno recenti ancora installati.
   note e armadio riconosciute in automatico; anteprima con l'esito di ogni riga, poi i locali vengono
   scritti sulle prese e nel registro modifiche.
 
+## Scadenze
+
+Ogni apparato (nell'armadio o in pianta) ha la sezione **Scadenze** nelle proprietà: fine garanzia, fine
+supporto, rinnovo licenza, manutenzione programmata e, per gli UPS, sostituzione delle batterie. Accanto alla
+data compaiono i giorni rimanenti.
+
+Menu ⋯ → **Scadenze…**:
+
+- elenco di questo progetto o di tutti i progetti, filtrato (scadute, 30 o 90 giorni, un anno, tutte);
+- un clic su una riga apre l'apparato;
+- **Calendario (.ics)** da importare in Google Calendar, Outlook o Calendario di Apple, con promemoria 30
+  giorni prima; CSV per i fogli di calcolo;
+- all'apertura del progetto un avviso ricorda le scadenze superate o entro 30 giorni («Più tardi» lo
+  nasconde per un giorno);
+- le scadenze possono comparire anche nella relazione.
+
 ## Videosorveglianza
 
 Menu ⋯ → **Archiviazione videosorveglianza**:
@@ -192,7 +220,22 @@ Menu ⋯ → **Archiviazione videosorveglianza**:
   - copertina con committente, autore, oggetto, riepilogo, conformità degli armadi e indice;
   - planimetrie, fogli di armadio, distinta materiali, piano IP, archiviazione videosorveglianza;
   - avanzamento lavori del sopralluogo e riepilogo delle segnalazioni;
-  - le note disegnate sulle planimetrie.
+  - le note disegnate sulle planimetrie, le scadenze;
+  - **intestazione personalizzata**: logo, azienda o ente, indirizzo e contatti (ricordati per tutti i
+    progetti di questo browser), con intestazione e numero di pagina «Pagina n di N» su ogni pagina;
+  - **collaudo e firme**: stato del documento (bozza, progetto esecutivo, as built, collaudo), data del
+    collaudo e riquadri firma (una riga per firmatario: ruolo, nome).
+
+## Schede dei locali
+
+Menu ⋯ → **Schede dei locali…**: una pagina stampabile per ogni locale (aula, ufficio…) da lasciare in loco
+o consegnare al referente. I locali sono quelli scritti sulle prese dei patch panel; si filtrano e si
+scelgono prima di stampare. Ogni scheda contiene:
+
+- nome del locale, edificio e piano, QR del progetto;
+- ritaglio della planimetria centrato sulle prese del locale, cerchiate in rosso;
+- tabella delle prese (etichetta, armadio e porta, switch e porta, VLAN, stato del sopralluogo);
+- apparati collegati con IP, MAC e seriale, e fino a sei foto.
 
 ## Esportazioni e integrazioni
 
@@ -201,11 +244,40 @@ Menu ⋯ → **Archiviazione videosorveglianza**:
 | JSON | progetto completo con planimetrie e foto (esportazione e importazione) |
 | Link condivisibile | progetto compresso nell'indirizzo, senza immagini |
 | GitHub Gist | salvataggio e apertura del progetto (token con il solo permesso Gists) |
-| NetBox | produttori, ruoli, tipi di dispositivo (YAML), sito, location, armadi, dispositivi e cavi |
-| Snipe-IT | CSV degli asset |
+| NetBox | produttori, ruoli, tipi di dispositivo (YAML), sito, location, armadi, dispositivi e cavi; oppure sincronizzazione diretta via API |
+| Snipe-IT | CSV degli asset; oppure sincronizzazione diretta via API |
+| Calendario | scadenze in formato .ics |
 | RouterOS | script VLAN degli switch e lease DHCP statiche |
 | CSV | etichette, permutazioni, porte, distinta, piano IP |
 | PNG / PDF | planimetrie, fogli di armadio, relazione |
+
+## Sincronizzazione con NetBox e Snipe-IT
+
+Menu ⋯ → **Sincronizza con NetBox e Snipe-IT…**: invece di esportare i CSV, il progetto viene scritto
+direttamente nei tuoi server tramite le API REST.
+
+- **NetBox**: crea o aggiorna sito, location (edifici e piani), produttori, ruoli, tipi di dispositivo con le
+  porte (interfacce degli switch, porte frontali e posteriori dei pannelli), armadi, dispositivi con
+  posizione, seriale e asset tag, e i cavi delle permutazioni. Gli oggetti esistenti sono riconosciuti per nome
+  o slug e non vengono duplicati; i cavi già presenti non vengono toccati.
+- **Importa un sito da NetBox**: crea un nuovo progetto con gli armadi e i dispositivi del sito (tipo
+  dedotto dal ruolo, porte dei pannelli e degli switch, seriali).
+- **Snipe-IT**: per gli apparati con numero di serie o asset tag crea produttori, categorie, modelli e
+  location mancanti, aggiorna gli asset già presenti (cercati per seriale o asset tag) e crea quelli nuovi;
+  MAC e IP vanno nelle note.
+- **Prova la connessione** e **Anteprima** (solo letture: mostra cosa verrebbe creato o aggiornato) prima
+  di **Sincronizza**; ogni operazione compare nel registro della finestra.
+
+Le chiamate partono dal browser, quindi il server deve:
+
+- essere in **HTTPS** (una pagina HTTPS non può chiamare un server HTTP);
+- accettare l'origine della pagina (CORS): in NetBox `CORS_ORIGIN_WHITELIST = ['https://ifeldr.github.io']`
+  in `configuration.py`; in Snipe-IT `CORS_ALLOWED_ORIGINS="https://ifeldr.github.io"` nel file `.env`,
+  poi `php artisan config:clear`.
+
+Token e indirizzi restano solo nel browser (localStorage) e non entrano mai nel progetto, nei backup o
+nei file esportati. Servono un token NetBox con permessi di scrittura su DCIM e un token Snipe-IT di un
+utente che può creare asset, modelli e location.
 
 ## Progetti, versioni e ricerca
 
@@ -314,6 +386,19 @@ sistema in uso.
 | Rotellina, + / − | Rotellina, + / − | zoom sulla planimetria |
 | Esc | Esc | deseleziona, chiude lo strumento Note, annulla calibrazione o posizionamento |
 | ← → , Invio, Esc | ← → , Invio, Esc | nella guida introduttiva: indietro, avanti, chiudi |
+| Tab, Maiusc + Tab | Tab, ⇧ + Tab | passa tra elementi, apparati, segnaposto e pulsanti |
+| Invio, Spazio | Invio, Spazio | seleziona l'elemento con il fuoco, inserisce l'elemento della libreria |
+
+## Accessibilità
+
+- Tutti gli elementi interattivi si raggiungono con **Tab** e si attivano con **Invio** o **Spazio**: schede
+  della libreria (inserimento nel primo spazio libero), apparati nell'armadio, segnaposto in pianta, elenchi
+  degli armadi e delle planimetrie, nodi del campus, porte. Dopo il ridisegno il fuoco torna sull'elemento.
+- Ruoli e nomi **ARIA** per i lettori di schermo (es. «Switch, U18»), stato selezionato con `aria-pressed`.
+- Finestre come **dialog modali**: il fuoco entra nella finestra, Tab resta al suo interno, Esc chiude
+  (anche da un campo) e il fuoco torna dove era; il resto della pagina è nascosto ai lettori di schermo.
+- Notifiche annunciate (`aria-live`), menu ⋯ navigabile con le frecce, collegamento «Salta al contenuto».
+- Contorno di fuoco ben visibile, rispetto di «riduci movimento» e del contrasto elevato del sistema.
 
 ## Lingua / Language
 
@@ -345,6 +430,10 @@ riga (testo italiano → testo inglese).
 | `assets/rack-designer/rack-designer-clip.js` | copia e incolla, backup e ripristino |
 | `assets/rack-designer/rack-designer-notes.js` | note sulla planimetria (testi, frecce, aree) |
 | `assets/rack-designer/rack-designer-care.js` | archivio persistente, spazio nel browser, avviso Safari, guida introduttiva |
+| `assets/rack-designer/rack-designer-life.js` | scadenze e calendario, PoE per classe, schede dei locali |
+| `assets/rack-designer/rack-designer-sync.js` | sincronizzazione API con NetBox e Snipe-IT, importazione di un sito da NetBox |
+| `assets/rack-designer/rack-designer-3d.js` | vista 3D dell'armadio |
+| `assets/rack-designer/rack-designer-a11y.js` | accessibilità: tastiera, ARIA, finestre modali |
 | `assets/rack-designer/i18n.js` | traduzione in inglese |
 | `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per le planimetrie in PDF |
@@ -373,6 +462,10 @@ Lo script avvia un server locale e controlla, in italiano e in inglese:
 - selezione multipla e scorciatoie sia con i tasti di Windows/Linux sia con quelli di macOS;
 - copia e incolla, backup e ripristino;
 - note in planimetria (creazione, eliminazione, presenza nel PNG), spazio e protezione dei dati, guida introduttiva;
+- scadenze e file .ics, PoE per classe, schede dei locali, relazione con intestazione e firme, vista 3D;
+- uso da tastiera e finestre modali accessibili;
+- sincronizzazione con NetBox e Snipe-IT su server simulati (anteprima senza scritture, creazione,
+  aggiornamento, importazione di un sito);
 - assenza di testo italiano nella versione inglese e di errori JavaScript.
 
 Lo stesso test gira su GitHub Actions a ogni push (scheda *Actions*); le schermate dell'ultimo test si

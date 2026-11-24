@@ -5,7 +5,8 @@ Uso:  pip install playwright && python -m playwright install chromium
 Avvia un server locale sulla cartella del repository, apre la pagina e verifica
 le funzioni principali in italiano e in inglese. Esce con codice 1 se un test fallisce.
 """
-import asyncio, functools, http.server, json, os, re, socketserver, sys, threading, traceback
+import asyncio
+import json, functools, http.server, json, os, re, socketserver, sys, threading, traceback
 from playwright.async_api import async_playwright
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -226,8 +227,13 @@ async def test_english(c):
     for i in range(await pg.evaluate("document.querySelectorAll('#bay .it').length")):
         await pg.evaluate(f"document.querySelectorAll('#bay .it')[{i}].dispatchEvent(new MouseEvent('click',{{bubbles:true}}))")
         await pg.wait_for_timeout(60); await sweep(f'elemento {i}')
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'real', 'backup']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'real', 'backup', 'deadlines', 'rooms', 'sync']:
         await c.menu(m); await sweep('menu ' + m)
+    await pg.click('[data-sy=tab][data-v=si]'); await pg.wait_for_timeout(150); await sweep('sync snipe-it')
+    await pg.click('.dialogo-t [data-close]')
+    await pg.evaluate("()=>{const sw=R().items.find(i=>i.kind==='sw');sw.props.poe=true;sw.props.warranty='2020-01-01';P.devices.find(d=>d.id==='dAP').w=40;S.item=sw.id;save();render()}"); await pg.wait_for_timeout(150); await sweep('scadenze e PoE')
+    await c.menu('deadlines'); await sweep('scadenze elenco'); await pg.click('.dialogo-t [data-close]')
+    await pg.click('[data-r3t]'); await pg.wait_for_timeout(200); await sweep('vista 3D'); await pg.click('[data-r3t]')
     await pg.keyboard.press('Escape')
     await c.menu('umodels'); await pg.click('#mBody [data-ux=mNew]'); await pg.wait_for_timeout(150); await sweep('nuovo modello')
     await pg.click('.dialogo-t [data-close]')
@@ -490,11 +496,159 @@ async def test_care(c):
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 
+async def test_life(c):
+    pg = c.pg
+    print('— scadenze, PoE per classe, schede dei locali, relazione personalizzata, vista 3D, accessibilità, NetBox e Snipe-IT')
+    await c.open('it')
+    await pg.click('[data-lt=racks]'); await pg.select_option('#tplPick', 'b-fd24'); await pg.wait_for_timeout(300)
+    await pg.evaluate(BUILD)
+    # PoE per classe
+    await pg.evaluate("()=>{const sw=R().items.find(i=>i.kind==='sw');sw.props.poe=true;const ap=P.devices.find(d=>d.id==='dAP');ap.w=40;save();render()}")
+    err = await pg.evaluate("validate(R()).filter(i=>i.ref==='PoE').map(i=>i.msg).join(' | ')")
+    check('PoE: classe superiore allo standard dello switch', 'classe 5' in err and '802.3at' in err, err)
+    await pg.evaluate("()=>{R().items.find(i=>i.kind==='sw').props.poestd='bt60';save();render()}")
+    check('PoE: errore risolto con switch 802.3bt', not await pg.evaluate("validate(R()).some(i=>i.ref==='PoE')"))
+    check('PoE: stima per modello', await pg.evaluate("NDC_life.poeEst({kind:'ap',model:Object.keys(MODELS).find(k=>MODELS[k].k==='ap'&&/Wi-Fi 7/.test(MODELS[k].note||''))})") == 25)
+    # scadenze
+    await pg.evaluate("()=>{const sw=R().items.find(i=>i.kind==='sw');S.item=sw.id;S.right='props';render()}")
+    await pg.fill('#rightBody input[type=date][data-iv=warranty]', '2020-01-31'); await pg.dispatch_event('#rightBody input[type=date][data-iv=warranty]', 'change')
+    await pg.evaluate("()=>{const d=new Date();d.setDate(d.getDate()+20);P.devices.find(x=>x.id==='dAP').license=d.toISOString().slice(0,10);save()}")
+    dl = await pg.evaluate("NDC_life.deadlines(false).map(x=>x.k+':'+(x.days<0?'past':'soon'))")
+    check('scadenze inserite dalle proprietà', dl == ['warranty:past', 'license:soon'], str(dl))
+    await c.menu('deadlines')
+    t = await pg.inner_text('#mBody')
+    check('elenco delle scadenze', '1 scadute' in t and '1 entro 30 giorni' in t, t[:200])
+    async with pg.expect_download() as d:
+        await pg.click('[data-dlx=ics]')
+    dl_ = await d.value; ics = open(await dl_.path(), encoding='utf-8').read()
+    check('calendario .ics con promemoria', ics.count('BEGIN:VEVENT') == 2 and 'TRIGGER:-P30D' in ics and 'DTSTART;VALUE=DATE:20200131' in ics, ics[:200])
+    await pg.click('[data-dlr]'); await pg.wait_for_timeout(200)
+    check('clic su una scadenza apre l\'apparato', await pg.evaluate("R().items.find(i=>i.id===S.item)?.kind") == 'sw')
+    # schede dei locali
+    await pg.evaluate("window._np=0;window.print=function(){window._np++};0")
+    await c.menu('rooms')
+    n = await pg.locator('[data-rm]').count()
+    await pg.click('[data-rmx=print]'); await pg.wait_for_function('window._np>0', timeout=15000)
+    rooms = await pg.evaluate("[...document.querySelectorAll('#print .room')].map(s=>s.querySelector('h1').textContent+':'+(!!s.querySelector('.room-map'))+':'+(!!s.querySelector('.room-qr svg')))")
+    check('schede dei locali con pianta e QR', n == 8 and len(rooms) == 8 and 'Aula 1:true:true' in rooms, str(rooms[:3]))
+    await pg.emulate_media(media='print'); await pg.screenshot(path=os.path.join(OUT, 'scheda-locale.png')); await pg.emulate_media(media='screen')
+    # relazione personalizzata
+    await pg.evaluate("window._np=0;0")
+    await c.menu('report'); await pg.fill('#rpOrg', 'Ente di prova'); await pg.fill('#rpAddr', 'Via Roma 1, Venezia')
+    await pg.select_option('#rpState', index=2); await pg.fill('#rpDate', '2026-11-20')
+    await pg.fill('#rpSign', 'Installatore, Mario Rossi\nCollaudatore, Anna Bianchi')
+    await pg.click('[data-ux=rpGo]'); await pg.wait_for_function('window._np>0', timeout=15000)
+    h = await pg.evaluate("document.getElementById('print').innerHTML")
+    check('relazione con intestazione, firme e numeri di pagina', 'Ente di prova' in h and h.count('rp-sign-l') == 2 and 'counter(pages)' in h and '20/11/2026' in h and 'Fine garanzia' in h, '')
+    check('intestazione ricordata', 'Ente di prova' in await pg.evaluate("localStorage.getItem('ndc-intestazione')"))
+    # vista 3D
+    await pg.click('[data-r3t]'); await pg.wait_for_timeout(300)
+    n3 = await pg.locator('.r3-it[data-r3]').count()
+    check('vista 3D dell\'armadio', n3 == await pg.evaluate("R().items.length") and n3 > 5, str(n3))
+    box = await pg.locator('#r3').bounding_box(); ry = await pg.evaluate("NDC_3d.V.ry")
+    await pg.mouse.move(box['x'] + 200, box['y'] + 300); await pg.mouse.down(); await pg.mouse.move(box['x'] + 330, box['y'] + 320, steps=5); await pg.mouse.up()
+    check('rotazione trascinando', abs(await pg.evaluate("NDC_3d.V.ry") - ry) > 20)
+    await pg.click('[data-r3v=front]'); await pg.wait_for_timeout(500); await pg.screenshot(path=os.path.join(OUT, 'vista-3d.png'))
+    await pg.click('[data-r3t]'); await pg.wait_for_timeout(200)
+    check('ritorno alla vista frontale', await pg.locator('#bay .it').count() > 5)
+    # accessibilità
+    await pg.evaluate("S.item=null;render()")
+    lbl = await pg.evaluate("[...document.querySelectorAll('#stage .it[data-id]')].every(e=>e.tabIndex===0&&e.getAttribute('role')==='button'&&e.getAttribute('aria-label'))")
+    check('apparati raggiungibili da tastiera con nome accessibile', lbl)
+    await pg.locator('#stage .it[data-id]').nth(2).focus(); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(200)
+    check('Invio seleziona l\'apparato e mantiene il fuoco', await pg.evaluate("S.item&&document.activeElement.dataset.id===S.item"))
+    await pg.evaluate("mutate(()=>{R().units=42})")
+    n0 = await pg.evaluate("R().items.length")
+    await pg.click('[data-lt=lib]') if await pg.query_selector('[data-lt=lib]') else None
+    await pg.locator('#leftBody .card[data-kind=cm]').first.focus(); await pg.keyboard.press(' '); await pg.wait_for_timeout(200)
+    check('Spazio inserisce un elemento dalla libreria', await pg.evaluate("R().items.length") == n0 + 1)
+    await c.menu('deadlines'); await pg.wait_for_timeout(100)
+    check('finestra modale accessibile con fuoco all\'interno', await pg.evaluate("document.querySelector('.dialogo').getAttribute('role')==='dialog'&&document.querySelector('.dialogo').contains(document.activeElement)&&document.getElementById('main').getAttribute('aria-hidden')==='true'"))
+    for _ in range(12):
+        await pg.keyboard.press('Tab')
+    check('Tab resta dentro la finestra', await pg.evaluate("document.querySelector('.dialogo').contains(document.activeElement)"))
+    await pg.keyboard.press('Escape'); await pg.wait_for_timeout(100)
+    check('collegamento «Salta al contenuto» e notifiche annunciate', await pg.evaluate("!!document.getElementById('skipLink')&&document.getElementById('toast').getAttribute('aria-live')==='polite'&&!document.getElementById('main').hasAttribute('aria-hidden')"))
+    # NetBox (API simulata)
+    calls = []
+    store = {'sites': [], 'locations': [], 'manufacturers': [], 'device-roles': [], 'device-types': [], 'racks': [], 'devices': [], 'front-ports': [], 'interfaces': [], 'cables': []}
+    nid = [100]
+
+    async def nb(route):
+        req = route.request; u = req.url.split('/api/')[1]; m = req.method; calls.append(m + ' ' + u.split('?')[0])
+        hdr = {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}
+        if u.startswith('status/'):
+            return await route.fulfill(status=200, headers=hdr, body=json.dumps({'netbox-version': '4.1.3'}))
+        coll = u.split('?')[0].strip('/').split('/')[-1]
+        if m == 'GET':
+            res = [] if coll not in store else store[coll][:0]
+            if coll == 'sites' and 'limit=500' in u:
+                res = [{'id': 7, 'name': 'Sede remota', 'slug': 'sede-remota'}]
+            if coll == 'racks' and 'site_id=7' in u:
+                res = [{'id': 1, 'name': 'Rack-1', 'u_height': 24, 'location': {'name': 'PT'}}]
+            if coll == 'devices' and 'site_id=7' in u:
+                res = [{'id': 11, 'name': 'core-sw', 'rack': {'id': 1}, 'position': 20, 'role': {'slug': 'switch', 'name': 'Switch'}, 'device_type': {'model': 'CRS326', 'u_height': 1}, 'serial': 'HB0001', 'asset_tag': None},
+                       {'id': 12, 'name': 'pp-a', 'rack': {'id': 1}, 'position': 22, 'role': {'slug': 'patch-panel', 'name': 'Patch panel'}, 'device_type': {'model': 'Cat6 24p', 'u_height': 1}, 'serial': '', 'asset_tag': None}]
+            if coll == 'front-ports' and 'site_id=7' in u:
+                res = [{'device': {'id': 12}}] * 24
+            if u.startswith('dcim/sites/7/'):
+                return await route.fulfill(status=200, headers=hdr, body=json.dumps({'id': 7, 'name': 'Sede remota'}))
+            return await route.fulfill(status=200, headers=hdr, body=json.dumps({'count': len(res), 'results': res}))
+        body = json.loads(req.post_data or 'null')
+        if isinstance(body, list):
+            out = []
+            for b in body:
+                nid[0] += 1; out.append({**b, 'id': nid[0]})
+            return await route.fulfill(status=201, headers=hdr, body=json.dumps(out))
+        nid[0] += 1
+        return await route.fulfill(status=201, headers=hdr, body=json.dumps({**(body or {}), 'id': nid[0]}))
+    await pg.route(re.compile(r'^https://netbox\.test/'), nb)
+    await c.menu('sync')
+    await pg.fill('[data-syc="nb.url"]', 'https://netbox.test/'); await pg.dispatch_event('[data-syc="nb.url"]', 'change')
+    await pg.fill('[data-syc="nb.token"]', 'abc123'); await pg.dispatch_event('[data-syc="nb.token"]', 'change')
+    await pg.click('[data-sy=test][data-v=nb]'); await pg.wait_for_timeout(400)
+    check('NetBox: prova della connessione', 'connessione riuscita' in await pg.inner_text('#syLog'))
+    check('token solo nel browser, non nel progetto', 'abc123' not in await pg.evaluate("JSON.stringify(P)") and 'abc123' in await pg.evaluate("localStorage.getItem('ndc-api')"))
+    calls.clear(); await pg.click('[data-sy=dry][data-v=nb]'); await pg.wait_for_function("/Anteprima completata|Preview complete/.test(document.getElementById('syLog').innerText)", timeout=15000)
+    check('NetBox: anteprima senza scritture', calls and all(x.startswith('GET') for x in calls) and 'da creare' in await pg.inner_text('#syLog'), str([x for x in calls if not x.startswith('GET')][:3]))
+    calls.clear(); await pg.click('[data-sy=go][data-v=nb]'); await pg.wait_for_function("/Sincronizzazione completata/.test(document.getElementById('syLog').innerText)", timeout=20000)
+    posts = [x for x in calls if x.startswith('POST')]
+    need = ['POST dcim/sites/', 'POST dcim/locations/', 'POST dcim/manufacturers/', 'POST dcim/device-roles/', 'POST dcim/device-types/', 'POST dcim/front-port-templates/', 'POST dcim/interface-templates/', 'POST dcim/racks/', 'POST dcim/devices/']
+    check('NetBox: sincronizzazione completa', all(n_ in posts for n_ in need) and 'class="err"' not in (await pg.inner_html('#syLog')), str(sorted(set(posts))))
+    await pg.click('[data-sy=imp]'); await pg.wait_for_timeout(300); np0 = await pg.evaluate("P.pid")
+    await pg.click('[data-sy=impSite]'); await pg.wait_for_timeout(600)
+    imp = await pg.evaluate("[P.name,P.pid,R().items.map(i=>i.kind+':'+i.pos+':'+(i.props.serial||'')).join(',')]")
+    check('NetBox: importazione di un sito come nuovo progetto', imp[0] == 'Sede remota' and imp[1] != np0 and 'sw:20:HB0001' in imp[2] and 'patch:22:' in imp[2], str(imp))
+    await pg.evaluate(f"openProject('{np0}')")
+    # Snipe-IT (API simulata)
+    si = []
+
+    async def snipe(route):
+        req = route.request; u = req.url.split('/api/v1/')[1]; m = req.method; si.append((m, u.split('?')[0], req.post_data))
+        hdr = {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'}
+        if u.startswith('statuslabels'):
+            return await route.fulfill(status=200, headers=hdr, body=json.dumps({'total': 1, 'rows': [{'id': 2, 'name': 'In uso', 'type': 'deployable'}]}))
+        if u.startswith('hardware/byserial/SN-TEST-0042'):
+            return await route.fulfill(status=200, headers=hdr, body=json.dumps({'total': 1, 'rows': [{'id': 55}]}))
+        if m == 'GET':
+            return await route.fulfill(status=200, headers=hdr, body=json.dumps({'total': 0, 'rows': []}))
+        return await route.fulfill(status=200, headers=hdr, body=json.dumps({'status': 'success', 'payload': {'id': len(si)}}))
+    await pg.route(re.compile(r'^https://snipe\.test/'), snipe)
+    await pg.evaluate("()=>{P.devices.find(d=>d.id==='dCam').serial='CAM-77';save()}")
+    await c.menu('sync'); await pg.click('[data-sy=tab][data-v=si]'); await pg.wait_for_timeout(150)
+    await pg.fill('[data-syc="si.url"]', 'https://snipe.test'); await pg.dispatch_event('[data-syc="si.url"]', 'change')
+    await pg.fill('[data-syc="si.token"]', 'tok'); await pg.dispatch_event('[data-syc="si.token"]', 'change')
+    await pg.click('[data-sy=go][data-v=si]'); await pg.wait_for_function("/Sincronizzazione completata|err/.test(document.getElementById('syLog').innerHTML)", timeout=15000)
+    w = [(m, u) for m, u, _ in si if m != 'GET']
+    check('Snipe-IT: aggiorna l\'esistente e crea il nuovo', ('PATCH', 'hardware/55') in w and ('POST', 'hardware') in w and ('POST', 'models') in w and any('CAM-77' in (b or '') for m, u, b in si if u == 'hardware'), str(w))
+    check('nessun errore', not c.errors, '; '.join(c.errors))
+
+
 async def main():
     srv, base = serve()
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for fn in (test_core, test_projects, test_tools, test_field, test_select, test_care, test_english):
+        for fn in (test_core, test_projects, test_tools, test_field, test_select, test_care, test_life, test_english):
             pg = await b.new_page(viewport={'width': 1500, 'height': 920}, accept_downloads=True)
             c = Ctx(pg, base)
             pg.on('pageerror', lambda e, c=c: c.errors.append(str(e)))

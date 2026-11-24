@@ -50,7 +50,7 @@ function defSpec(it){
 }
 function spec(it){const d=defSpec(it),p=it.props;const o=k=>has(p[k])?num(p[k],d[k]):d[k];return {w:o('w'),kg:o('kg'),dep:o('dep'),poeb:o('poeb'),va:o('va'),def:d}}
 const upsPf=it=>{const m=it.props.model&&MODELS[it.props.model];return m&&/on-line/i.test(m.note||'')?0.9:0.7};
-function devW(d){if(has(d.w))return num(d.w,0);const m=d.model&&MODELS[d.model];const t=m?(m.note||'')+' '+m.m:'';if(d.kind==='ap')return /Wi-Fi 7/.test(t)?25:/6E/.test(t)?20:15;if(d.kind==='cam')return /PTZ|speed dome/i.test(t)?25:8;return 0}
+function devW(d){if(has(d.w))return num(d.w,0);if(window.NDC_poeW){const v=window.NDC_poeW(d);if(v!=null)return v}const m=d.model&&MODELS[d.model];const t=m?(m.note||'')+' '+m.m:'';if(d.kind==='ap')return /Wi-Fi 7/.test(t)?25:/6E/.test(t)?20:15;if(d.kind==='cam')return /PTZ|speed dome/i.test(t)?25:8;return 0}
 const rDepth=r=>num(r.depth,r.units<=15?450:800);
 const rCap=r=>num(r.cap,r.units<=15?60:r.units<=27?400:800);
 

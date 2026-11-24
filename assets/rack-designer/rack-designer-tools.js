@@ -318,6 +318,12 @@ async function importFile(f){
    5) Relazione completa (stampa / PDF)
    ===================================================================== */
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const HKEY='ndc-intestazione';
+const HD=()=>{try{return JSON.parse(localStorage.getItem(HKEY)||'{}')}catch(_){return {}}};
+const saveHD=h=>{try{localStorage.setItem(HKEY,JSON.stringify(h))}catch(_){toast('Impossibile salvare il logo: immagine troppo grande')}};
+async function loadLogo(f){try{const url=URL.createObjectURL(f);const im=await imgEl(url);const k=Math.min(1,400/Math.max(im.naturalWidth,im.naturalHeight));const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);
+  saveHD({...HD(),org:$('#rpOrg')?.value.trim()??HD().org,addr:$('#rpAddr')?.value.trim()??HD().addr,logo:c.toDataURL('image/png')});keepScroll(openReport)}catch(_){toast('Immagine non valida')}}
+document.addEventListener('change',e=>{if(e.target.id==='rpLogo'&&e.target.files[0])loadLogo(e.target.files[0])});
 function openReport(){
   const st=P.report||{};const has=k=>st[k]!==false;
   const hasCam=P.devices.some(d=>d.kind==='cam');
@@ -325,13 +331,23 @@ function openReport(){
     <div class="f"><label>Committente</label><input type="text" id="rpC" value="${esc(st.client||'')}" placeholder="es. Istituto …"></div>
     <div class="f"><label>Redatta da</label><input type="text" id="rpA" value="${esc(st.author||P.author||'')}" placeholder="Nome e cognome"></div>
     <div class="f" style="grid-column:1/-1"><label>Oggetto / note introduttive</label><textarea id="rpN" rows="3" placeholder="es. Realizzazione della rete dati del piano terra">${esc(st.notes||'')}</textarea></div></div>
-  <div class="sez"><h3>Sezioni</h3><div class="grid2">${[['plans','Planimetrie con prese e apparati'],['racks','Fogli di armadio (disposizione, prese, permutazioni, alimentazione, inventario, certificazioni, registro)'],['bom','Distinta materiali'],['ip','Piano indirizzi IP'],['cctv','Archiviazione videosorveglianza'+(hasCam?'':' (nessuna telecamera)')],['field','Avanzamento lavori (sopralluogo)'+((P.fieldlog||[]).length?'':' (nessun dato)')],['issues','Riepilogo delle segnalazioni']].map(([k,t])=>`<label class="chk"><input type="checkbox" data-rp="${k}" ${has(k)?'checked':''}><span>${t}</span></label>`).join('')}</div></div>
+  <div class="sez"><h3>Intestazione</h3><p class="piccola" style="margin-top:0">Vale per tutti i progetti di questo browser.</p><div class="grid2">
+    <div class="f"><label>Azienda o ente</label><input type="text" id="rpOrg" value="${esc(HD().org||'')}" placeholder="es. Ispettoria … – Ufficio IT"></div>
+    <div class="f"><label>Logo</label><div class="btnrow" style="align-items:center">${HD().logo?`<img src="${HD().logo}" alt="" class="rp-logo-p">`:''}<label class="btn piccolo"><input type="file" accept="image/*" id="rpLogo" hidden>${HD().logo?'Cambia logo':'Carica logo'}</label>${HD().logo?'<button class="btn piccolo" data-ux="rpLogoDel">Togli</button>':''}</div></div>
+    <div class="f" style="grid-column:1/-1"><label>Indirizzo e contatti</label><input type="text" id="rpAddr" value="${esc(HD().addr||'')}" placeholder="es. Via …, Mestre (VE) · it@… · tel. …"></div>
+    <label class="chk" style="grid-column:1/-1"><input type="checkbox" id="rpHead" ${HD().head!==false?'checked':''}><span>Intestazione e numero di pagina su ogni pagina</span></label></div></div>
+  <div class="sez"><h3>Collaudo e firme</h3><div class="grid2">
+    <div class="f"><label>Data del collaudo</label><input type="date" id="rpDate" value="${esc(st.date||'')}"></div>
+    <div class="f"><label>Stato del documento</label><select id="rpState">${['Bozza','Progetto esecutivo','As built','Collaudo'].map(x=>`<option ${st.state===x?'selected':''}>${x}</option>`).join('')}</select></div>
+    <div class="f" style="grid-column:1/-1"><label>Firme (una per riga: ruolo, nome)</label><textarea id="rpSign" rows="3" placeholder="Redatto da, Mario Rossi&#10;Collaudatore, …&#10;Per il committente, …">${esc(st.sign||'')}</textarea></div></div></div>
+  <div class="sez"><h3>Sezioni</h3><div class="grid2">${[['plans','Planimetrie con prese e apparati'],['racks','Fogli di armadio (disposizione, prese, permutazioni, alimentazione, inventario, certificazioni, registro)'],['bom','Distinta materiali'],['ip','Piano indirizzi IP'],['cctv','Archiviazione videosorveglianza'+(hasCam?'':' (nessuna telecamera)')],['field','Avanzamento lavori (sopralluogo)'+((P.fieldlog||[]).length?'':' (nessun dato)')],['dl','Scadenze (garanzie, supporto, batterie, licenze)'],['issues','Riepilogo delle segnalazioni']].map(([k,t])=>`<label class="chk"><input type="checkbox" data-rp="${k}" ${has(k)?'checked':''}><span>${t}</span></label>`).join('')}</div></div>
   <p class="piccola">La relazione si apre nella finestra di stampa del browser: scegli «Salva come PDF» per ottenere il file.</p>
   <div class="btnrow" style="justify-content:flex-end;margin-top:12px"><button class="btn" data-close>Annulla</button><button class="btn primario" data-ux="rpGo">Genera la relazione</button></div>`);
 }
 function wallCount(){let n=0;P.racks.forEach(r=>r.items.filter(i=>i.kind==='patch').forEach(it=>{for(let k=1;k<=+it.props.ports;k++){const pd=it.ports[k];if(pd&&pd.t==='link')continue;if(pd?.note||devAtPort(r.id,it.id,k))n++}}));return n}
 async function buildReport(){
-  const st=P.report={client:$('#rpC').value.trim(),author:$('#rpA').value.trim(),notes:$('#rpN').value.trim()};$$('[data-rp]').forEach(c=>st[c.dataset.rp]=c.checked);quietSave();
+  const st=P.report={client:$('#rpC').value.trim(),author:$('#rpA').value.trim(),notes:$('#rpN').value.trim(),date:$('#rpDate').value,state:$('#rpState').value,sign:$('#rpSign').value.trim()};
+  const hd={...HD(),org:$('#rpOrg').value.trim(),addr:$('#rpAddr').value.trim(),head:$('#rpHead').checked};saveHD(hd);$$('[data-rp]').forEach(c=>st[c.dataset.rp]=c.checked);quietSave();
   closeModal();toast('Preparazione della relazione…');
   const keep={rack:S.rack,plan:S.plan,view:S.view,item:S.item,port:S.port};const wp=window.print;window.print=()=>{};const parts=[];
   const I=P.racks.map(r=>({r,I:validate(r)}));
@@ -348,20 +364,28 @@ async function buildReport(){
         ${k.st.filter(o=>o.use).length?`<h2>NVR e NAS</h2><table><tr><th>Apparato</th><th>Posizione</th><th>Canali</th><th>Dischi</th><th>RAID</th><th>Spazio utile</th></tr>${k.st.filter(o=>o.use).map(o=>`<tr><td>${esc(o.name)}</td><td>${esc(o.where)}</td><td>${o.ch}</td><td>${o.disks} × ${o.tb} TB</td><td>${RAID[o.raid]}</td><td>${fmt(o.cap,1)} TB</td></tr>`).join('')}</table>`:''}
         <h2>Esito</h2>${k.msgs.map(([,m])=>`<div>${esc(m)}</div>`).join('')}`])}
     if(st.field&&(P.fieldlog||[]).length&&window.NDC_field){toc.push('Avanzamento lavori');parts.push(['fl',window.NDC_field.reportHtml()])}
+    if(st.dl&&window.NDC_life){const l=window.NDC_life.deadlines(false);if(l.length){toc.push('Scadenze');const fd=iso=>new Date(iso+'T00:00:00').toLocaleDateString(window.NDC_lang==='en'?'en-GB':'it-IT');
+      parts.push(['dl',`<h1>Scadenze</h1><table><tr><th>Data</th><th>Scadenza</th><th>Apparato</th><th>Posizione</th><th>Giorni</th></tr>${l.map(x=>`<tr><td>${fd(x.date)}</td><td>${esc(x.type)}</td><td>${esc(x.name)}</td><td>${esc(x.where)}</td><td>${x.days<0?'scaduta':x.days}</td></tr>`).join('')}</table>`])}}
     if(st.issues){const all=I.flatMap(x=>x.I.map(i=>[rid(x.r),i]));const pi=P.plans.flatMap(pl=>validatePlan(pl).map(i=>[pl.name,i]));toc.push('Riepilogo delle segnalazioni');
       parts.push(['is',`<h1>Riepilogo delle segnalazioni</h1>${all.length+pi.length?`<table><tr><th>Dove</th><th>Livello</th><th>Elemento</th><th>Segnalazione</th></tr>${[...all,...pi].map(([w,i])=>`<tr><td>${esc(w)}</td><td>${{err:'Errore',warn:'Avviso',info:'Nota'}[i.lvl]}</td><td>${esc(i.ref)}</td><td>${esc(i.msg)}</td></tr>`).join('')}</table>`:'<div>Nessuna segnalazione.</div>'}`])}
     // copertina
     const dk={};P.devices.forEach(d=>dk[d.kind]=(dk[d.kind]||0)+1);
     const bl=new Set([...P.racks.filter(r=>r.type!=='CD').map(r=>r.b),...P.plans.map(p=>p.b)].filter(Boolean));
-    const cover=`<div class="rp-cover"><div class="rp-k">Relazione di progetto</div><h1 class="rp-t">${esc(P.name)}</h1>${st.client?`<div class="rp-c">${esc(st.client)}</div>`:''}
+    const signs=(st.sign||'').split('\n').map(l=>l.trim()).filter(Boolean).map(l=>{const i=l.indexOf(',');return i>0?[l.slice(0,i).trim(),l.slice(i+1).trim()]:[l,'']});
+    const fdate=st.date?new Date(st.date+'T00:00:00').toLocaleDateString(window.NDC_lang==='en'?'en-GB':'it-IT'):'';
+    if(signs.length||st.date){toc.push('Collaudo e firme');parts.push(['sg',`<h1>${st.state==='Collaudo'?'Verbale di collaudo':'Approvazione'}</h1><p>${esc(st.state||'')}${fdate?` · ${fdate}`:''} · ${esc(P.name)}${st.client?' · '+esc(st.client):''}</p>
+      <div class="rp-signs">${(signs.length?signs:[['Redatto da',st.author||''],['Per il committente','']]).map(([r,n])=>`<div class="rp-sign"><div class="rp-sign-l"></div><b>${esc(r)}</b><span>${esc(n)}</span><small>Data e firma</small></div>`).join('')}</div>`])}
+    const cover=`<div class="rp-cover">${hd.logo||hd.org?`<div class="rp-brand">${hd.logo?`<img src="${hd.logo}" alt="">`:''}<div><b>${esc(hd.org||'')}</b>${hd.addr?`<div>${esc(hd.addr)}</div>`:''}</div></div>`:''}<div class="rp-k">${esc(st.state&&st.state!=='Bozza'?st.state:'Relazione di progetto')}</div><h1 class="rp-t">${esc(P.name)}</h1>${st.client?`<div class="rp-c">${esc(st.client)}</div>`:''}
       ${st.notes?`<p class="rp-n">${esc(st.notes).replace(/\n/g,'<br>')}</p>`:''}
-      <table class="rp-meta"><tr><td>Data</td><td>${today()}</td></tr>${st.author?`<tr><td>Redatta da</td><td>${esc(st.author)}</td></tr>`:''}<tr><td>Strumento</td><td>Network Design Center</td></tr></table>
+      <table class="rp-meta"><tr><td>Data</td><td>${today()}</td></tr>${fdate?`<tr><td>Data del collaudo</td><td>${fdate}</td></tr>`:''}${st.author?`<tr><td>Redatta da</td><td>${esc(st.author)}</td></tr>`:''}<tr><td>Strumento</td><td>Network Design Center</td></tr></table>
       <h2>Riepilogo</h2><table><tr><th>Edifici</th><th>Armadi</th><th>Prese utente</th><th>Access point</th><th>Telecamere</th><th>Altri apparati</th><th>Planimetrie</th></tr>
       <tr><td>${bl.size||'—'}</td><td>${P.racks.length}</td><td>${wallCount()}</td><td>${dk.ap||0}</td><td>${dk.cam||0}</td><td>${dk.altro||0}</td><td>${P.plans.length}</td></tr></table>
       <h2>Armadi</h2><table><tr><th>Armadio</th><th>Tipo</th><th>Unità</th><th>Occupazione</th><th>Conformità</th></tr>${I.map(({r,I})=>{const used=r.items.reduce((s,i)=>s+(i.kind==='blank'?0:i.h),0);return `<tr><td>${esc(rid(r))}</td><td>${TYPES[r.type].it}</td><td>${r.units} U</td><td>${used}/${r.units} U</td><td>${score(I)}% · ${I.filter(i=>i.lvl==='err').length} errori, ${I.filter(i=>i.lvl==='warn').length} avvisi</td></tr>`}).join('')}</table>
       ${toc.length?`<h2>Contenuto</h2><ol class="rp-toc">${toc.map(t=>`<li>${t}</li>`).join('')}</ol>`:''}</div>`;
     window.print=wp;
-    $('#print').innerHTML=`<div class="relazione">${cover}${parts.map(([k,h])=>`<section class="rp-sec rp-${k}">${h}</section>`).join('')}</div>`;
+    const cs=t=>'"'+String(t||'').replace(/\\/g,'').replace(/"/g,"'").replace(/[\r\n]+/g,' ')+'"';const pg=(window.NDC_tr||(x=>x))('Pagina'),di=window.NDC_lang==='en'?'of':'di';
+    const head=hd.head!==false?`<style>@page{margin:16mm 12mm 15mm;@top-left{content:${cs(hd.org||'')};font:8pt sans-serif;color:#666}@top-right{content:${cs(P.name)};font:8pt sans-serif;color:#666}@bottom-left{content:${cs((st.state||'')+' · '+today())};font:8pt sans-serif;color:#666}@bottom-right{content:${cs(pg)} " " counter(page) " ${di} " counter(pages);font:8pt sans-serif;color:#666}}</style>`:'';
+    $('#print').innerHTML=`<div class="relazione ${hd.head!==false?'con-testa':''}">${head}${cover}${parts.map(([k,h])=>`<section class="rp-sec rp-${k}">${h}</section>`).join('')}</div>`;
   }finally{window.print=wp;Object.assign(S,keep);render()}
   await sleep(200);window.print();
 }
@@ -375,7 +399,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-ux]');if(!
     ccAdd:()=>{cc().extra.push({n:4,mp:4});quietSave();keepScroll(openCctv)},ccDel:()=>{cc().extra.splice(+b.dataset.i,1);quietSave();keepScroll(openCctv)},
     ipAuto:()=>autoAssign(false),ipAll:()=>{if(confirm('Riassegnare tutti gli indirizzi secondo le VLAN scelte? Gli indirizzi attuali vengono sostituiti (puoi tornare indietro con Ctrl+Z).'))autoAssign(true)},
     ipCsv:()=>download(slug(P.name)+'-indirizzi-ip.csv',ipCsv(),'text/csv;charset=utf-8'),ipRsc:()=>download(slug(P.name)+'-lease-dhcp.rsc',ipRsc(),'text/plain'),
-    imApply:importApply,rpGo:buildReport})[a]?.();
+    imApply:importApply,rpGo:buildReport,rpLogoDel:()=>{const h=HD();delete h.logo;saveHD(h);keepScroll(openReport)}})[a]?.();
 });
 document.addEventListener('change',e=>{if(!$('#modal').classList.contains('open'))return;cctvInput(e)||ipInput(e)||importInput(e)});
 const fin=document.createElement('input');fin.type='file';fin.accept='.xlsx,.csv,.txt,.xls';fin.hidden=true;document.body.appendChild(fin);

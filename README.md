@@ -27,6 +27,7 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer-tools.js` | modelli personalizzati, archiviazione videosorveglianza, piano IP, importazione prese da Excel/CSV, relazione completa |
 | `assets/rack-designer/rack-designer-field.js` | modalità sopralluogo da telefono, importazione del sopralluogo sul PC |
 | `assets/rack-designer/vendor/jsQR.min.js` | jsQR 1.4 (Apache 2.0) per leggere i QR sugli iPhone, caricato solo quando serve |
+| `assets/rack-designer/rack-designer-select.js` | selezione multipla e scorciatoie da tastiera (Ctrl su Windows e Linux, ⌘ su macOS) |
 | `tests/run_tests.py`, `.github/workflows/test.yml` | test automatici (Playwright) eseguiti da GitHub Actions a ogni push |
 | `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
@@ -184,6 +185,13 @@ Per aggiungere o correggere una traduzione basta modificare il dizionario `D` in
 | ↑ / ↓ | sposta l'elemento selezionato nell'armadio |
 | Canc | elimina l'elemento selezionato |
 | Rotellina, + / − | zoom sulla planimetria |
+| Ctrl/⌘ + clic | aggiunge o toglie un elemento dalla selezione (armadio, pianta, elenco armadi) |
+| Maiusc/⇧ + clic | intervallo di unità nell'armadio, aggiunta in pianta |
+| Maiusc/⇧ + trascina | selezione con un rettangolo |
+| Ctrl/⌘ + A | seleziona tutto l'armadio o tutta la pianta |
+| Canc, Backspace (⌫, ⌘⌫ su Mac) | elimina la selezione (in pianta: toglie dalla pianta) |
+| Ctrl/⌘ + D | duplica la selezione |
+| Frecce | sposta la selezione: 1 U nell'armadio, 1 px in pianta (Maiusc/⇧: 10 px) |
 | Ctrl+K oppure / | ricerca globale (identificativi, prese, locali, modelli, seriali, MAC, IP) |
-| Ctrl+Z / Ctrl+Y | annulla / ripeti |
+| Ctrl+Z / Ctrl+Y (⌘Z / ⌘⇧Z su Mac) | annulla / ripeti |
 | Esc | annulla calibrazione o posizionamento, deseleziona |

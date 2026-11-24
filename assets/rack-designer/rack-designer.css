@@ -576,3 +576,12 @@ body.in-campo{overflow:hidden}
 .fc-pc .fc-th{grid-template-columns:repeat(4,1fr)}
 @media (max-width:820px){#langBtn,#redoBtn{display:none!important}.menu-lista .lang-m{display:block!important}}
 .menu-lista .lang-m{display:none}
+/* selezione multipla */
+.it.msel{outline:2px solid var(--accento);outline-offset:1px;z-index:3;box-shadow:0 0 0 4px var(--accento-tenue)}
+.mk.msel .sym{box-shadow:0 0 0 3px var(--accento),0 0 0 6px var(--accento-tenue),0 1px 4px rgba(0,0,0,.45)}
+.ritem.msel{background:var(--accento-tenue);border-color:color-mix(in srgb,var(--accento) 35%,transparent)}
+.marquee{position:fixed;z-index:90;border:1.5px dashed var(--accento);background:color-mix(in srgb,var(--accento) 12%,transparent);pointer-events:none;border-radius:3px}
+kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid var(--linea2);border-bottom-width:2px;border-radius:5px;background:var(--pannello2);font:600 12px var(--mono);color:var(--titoli);text-align:center;margin:1px}
+.kb-s{color:var(--tenue);margin:0 1px}
+.ktab{width:100%;border-collapse:collapse;font-size:13px}.ktab td{padding:4px 2px;vertical-align:middle;border-bottom:1px solid var(--linea)}.ktab td:first-child{white-space:nowrap;padding-right:10px}
+.mlist{max-height:40vh;overflow:auto}

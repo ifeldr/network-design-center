@@ -234,6 +234,8 @@ async def test_english(c):
     await pg.evaluate("NDC_field.openField()"); await pg.wait_for_timeout(200); await sweep('sopralluogo home')
     await pg.click('[data-fc=plan]'); await pg.wait_for_timeout(300); await sweep('sopralluogo pianta')
     await pg.evaluate("NDC_field.closeField()")
+    await pg.click('[data-view=rack]'); await pg.wait_for_timeout(200)
+    await pg.keyboard.press('Control+a'); await pg.wait_for_timeout(150); await sweep('selezione multipla')
     await pg.keyboard.press('Escape')
     for v in ['plan', 'campus']:
         await pg.click(f'[data-view={v}]'); await pg.wait_for_timeout(300); await sweep('vista ' + v)
@@ -364,11 +366,52 @@ async def test_field(c):
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 
+async def test_select(c):
+    pg = c.pg
+    for mac in (False, True):
+        sys_ = 'macOS' if mac else 'Windows/Linux'
+        print(f'— selezione multipla e tastiera ({sys_})')
+        if mac:
+            await pg.add_init_script("Object.defineProperty(navigator,'platform',{get:()=>'MacIntel'});Object.defineProperty(navigator,'userAgentData',{get:()=>undefined})")
+        await c.open('it')
+        M = 'Meta' if mac else 'Control'
+        check(f'piattaforma riconosciuta ({sys_})', await pg.evaluate('NDC_keys.MAC') == mac)
+        await pg.click('[data-lt=racks]'); await pg.select_option('#tplPick', 'b-fd24'); await pg.wait_for_timeout(300)
+        n0 = await pg.evaluate('R().items.length')
+        ids = await pg.eval_on_selector_all('#bay .it[data-id]', 'e=>e.map(x=>x.dataset.id)')
+        it = lambda i: pg.locator(f'#bay .it[data-id="{ids[i]}"]')
+        await it(2).click(); await it(5).click(modifiers=[M]); await it(7).click(modifiers=[M]); await pg.wait_for_timeout(100)
+        check(f'{M}+clic aggiunge alla selezione', await pg.evaluate('NDC_select.itemsSel().size') == 3)
+        await pg.keyboard.press('Escape'); await it(1).click(); await it(6).click(modifiers=['Shift']); await pg.wait_for_timeout(100)
+        check('Maiusc+clic seleziona un intervallo', await pg.evaluate('NDC_select.itemsSel().size') == 6)
+        await pg.keyboard.press('Backspace' if mac else 'Delete'); await pg.wait_for_timeout(100)
+        check('eliminazione da tastiera della selezione', await pg.evaluate('R().items.length') == n0 - 6)
+        await pg.keyboard.press(f'{M}+z'); await pg.wait_for_timeout(100)
+        check('annulla ripristina gli elementi', await pg.evaluate('R().items.length') == n0)
+        await it(0).click(); await pg.keyboard.press(f'{M}+a'); await pg.wait_for_timeout(100)
+        check(f'{M}+A seleziona tutto', await pg.evaluate('NDC_select.itemsSel().size') == n0)
+        await pg.keyboard.press(f'{M}+Backspace' if mac else 'Backspace'); await pg.wait_for_timeout(100)
+        check('eliminazione di tutto l\'armadio', await pg.evaluate('R().items.length') == 0)
+        await pg.keyboard.press(f'{M}+Shift+z' if mac else f'{M}+y'); await pg.wait_for_timeout(100)
+        await pg.keyboard.press(f'{M}+z'); await pg.wait_for_timeout(100)
+        await pg.evaluate(BUILD); await pg.click('[data-view=plan]'); await pg.wait_for_timeout(500)
+        await pg.click('[data-mk="mk:dAP"] .sym'); await pg.click('[data-mk="mk:dCam"] .sym', modifiers=[M]); await pg.wait_for_timeout(100)
+        check('selezione multipla in planimetria', await pg.evaluate('NDC_select.mksSel().size') == 2)
+        x = await pg.evaluate("P.devices.find(d=>d.id==='dAP').x"); await pg.keyboard.press('Shift+ArrowRight'); await pg.wait_for_timeout(100)
+        check('frecce spostano la selezione in pianta', await pg.evaluate("P.devices.find(d=>d.id==='dAP').x") == x + 10)
+        await pg.keyboard.press('Delete'); await pg.wait_for_timeout(100)
+        check('eliminazione dalla pianta', await pg.evaluate("!P.devices.some(d=>d.id==='dAP'||d.id==='dCam')"))
+        await c.menu('help')
+        check('scorciatoie della piattaforma nella guida', ('⌘' in await pg.inner_text('#mBody')) == mac)
+        await pg.keyboard.press('Escape')
+    check('nessun errore', not c.errors, '; '.join(c.errors))
+
+
 async def main():
     srv, base = serve()
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for fn in (test_core, test_projects, test_tools, test_field, test_english):
+        for fn in (test_core, test_projects, test_tools, test_field, test_select, test_english):
             pg = await b.new_page(viewport={'width': 1500, 'height': 920}, accept_downloads=True)
             c = Ctx(pg, base)
             pg.on('pageerror', lambda e, c=c: c.errors.append(str(e)))

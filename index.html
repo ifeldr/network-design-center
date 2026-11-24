@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rack Designer · Lorenzo Garbi</title>
+<meta name="description" content="Progetta, verifica ed etichetta gli armadi di rete e posiziona armadi, prese e apparati sulla planimetria.">
+<meta property="og:title" content="Rack Designer">
+<meta property="og:description" content="Allestimento ed etichettatura degli armadi di rete, con posizionamento su planimetria.">
+<meta property="og:url" content="https://ifeldr.github.io/rack-designer/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<link rel="canonical" href="https://ifeldr.github.io/rack-designer/">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="assets/rack-designer/rack-designer.css">
+<script>try{var m=localStorage.getItem('rd-mode');if(m)document.documentElement.setAttribute('data-mode',m)}catch(e){}</script>
+</head>
+<body>
+<header class="testata">
+  <a class="marchio" href="https://ifeldr.github.io" title="Torna al sito">
+    <svg viewBox="0 0 64 64" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round"><path d="M32 8 54 20v24L32 56 10 44V20z"/><path d="M10 20l22 12 22-12M32 32v24"/></g></svg>
+    <span class="hide-sm">Lorenzo Garbi</span>
+  </a>
+  <span class="app-nome hide-md">Rack Designer</span>
+  <input class="progetto hide-sm" id="projName" title="Nome del progetto" aria-label="Nome del progetto">
+  <nav class="viste" aria-label="Vista">
+    <button data-view="rack" class="on"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="1.5"/><path d="M8 7h8M8 11h8M8 15h8"/></svg><span>Armadio</span></button>
+    <button data-view="plan"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3z"/><path d="M3 11h8V4M11 15v5M15 4v7h6"/></svg><span>Planimetria</span></button>
+  </nav>
+  <div class="sp"></div>
+  <button class="btn icona" id="undoBtn" title="Annulla (Ctrl+Z)"><svg viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg></button>
+  <button class="btn icona" id="redoBtn" title="Ripeti (Ctrl+Y)"><svg viewBox="0 0 24 24"><path d="m15 14 5-5-5-5"/><path d="M20 9H9a5 5 0 0 0 0 10h3"/></svg></button>
+  <button class="btn primario" id="autoBtn" title="Riorganizza l'armadio secondo le regole di allestimento"><svg viewBox="0 0 24 24"><path d="m12 3 1.9 5.8L20 10l-5 3.6L16.5 20 12 16.4 7.5 20 9 13.6 4 10l6.1-1.2z"/></svg><span class="hide-sm">Auto-organizza</span></button>
+  <button class="btn primario" id="uploadBtn" hidden><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></svg><span class="hide-sm">Carica planimetria</span></button>
+  <button class="btn hide-md" id="printBtn"><svg viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><rect x="2" y="9" width="20" height="9" rx="2"/><path d="M6 14h12v8H6z"/></svg><span>Stampa</span></button>
+  <div class="menu" id="moreMenu">
+    <button class="btn icona" id="moreBtn" title="Altro" aria-label="Altro"><svg viewBox="0 0 24 24" class="pieno"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+    <div class="menu-lista">
+      <button data-m="print" class="show-md">Stampa</button>
+      <button data-m="topo">Topologia della rete</button>
+      <button data-m="csv">Esporta etichette (CSV per IRM)</button>
+      <button data-m="json">Esporta progetto (JSON)</button>
+      <button data-m="import">Importa progetto (JSON)…</button>
+      <button data-m="share">Copia link condivisibile</button>
+      <hr>
+      <button data-m="mode">Modalità chiara / scura</button>
+      <button data-m="help">Regole e guida</button>
+      <hr>
+      <button data-m="demo">Carica progetto di esempio</button>
+      <button data-m="new">Nuovo progetto vuoto</button>
+    </div>
+  </div>
+  <a class="indietro hide-lg" href="https://ifeldr.github.io">Torna al sito</a>
+  <input type="file" id="fileIn" accept=".json,application/json" hidden>
+  <input type="file" id="planIn" accept="image/png,image/jpeg,image/webp,image/svg+xml,application/pdf,.pdf,.svg" hidden>
+</header>
+
+<aside id="left" aria-label="Libreria">
+  <div class="schede" id="leftTabs"></div>
+  <div class="scorri" id="leftBody"></div>
+</aside>
+
+<main id="main">
+  <div class="stage" id="stage"></div>
+  <div class="planvp" id="pv" hidden></div>
+  <div class="barra-flott" id="floatBar"></div>
+</main>
+
+<aside id="right" aria-label="Proprietà">
+  <div class="schede"><button class="scheda on" data-rt="props">Proprietà</button><button class="scheda" data-rt="check">Conformità <span class="badge" id="issCount">0</span></button></div>
+  <div class="scorri" id="rightBody"></div>
+</aside>
+
+<footer class="piede" id="foot"></footer>
+
+<div class="modale" id="modal"><div class="dialogo"><div class="dialogo-t"><h2 id="mTitle"></h2><button class="btn icona" data-close aria-label="Chiudi">✕</button></div><div class="dialogo-c" id="mBody"></div></div></div>
+<div class="toast" id="toast" role="status"></div>
+<div id="print"></div>
+<script src="assets/rack-designer/rack-designer.js"></script>
+</body>
+</html>

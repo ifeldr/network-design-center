@@ -12,10 +12,12 @@
 <meta property="og:locale" content="it_IT">
 <link rel="canonical" href="https://ifeldr.github.io/network-design-center/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0d6efd">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="assets/rack-designer/rack-designer.css?v=8">
+<link rel="stylesheet" href="assets/rack-designer/rack-designer.css?v=9">
 <script>try{var m=localStorage.getItem('rd-mode');if(m)document.documentElement.setAttribute('data-mode',m)}catch(e){}</script>
 </head>
 <body>
@@ -46,6 +48,12 @@
       <button data-m="bom">Distinta materiali</button>
       <button data-m="labels">Etichette per etichettatrice</button>
       <button data-m="netbox">Esporta per NetBox</button>
+      <hr>
+      <button data-m="vlans">VLAN e indirizzi IP</button>
+      <button data-m="swcfg">Configurazione switch (RouterOS)</button>
+      <button data-m="snipe">Esporta per Snipe-IT</button>
+      <button data-m="fluke">Importa certificazioni (Fluke LinkWare)…</button>
+      <button data-m="gist">Salva o apri da GitHub Gist</button>
       <button data-m="csv">Esporta etichette (CSV per IRM)</button>
       <button data-m="json">Esporta progetto (JSON)</button>
       <button data-m="import">Importa progetto (JSON)…</button>
@@ -84,7 +92,8 @@
 <div class="toast" id="toast" role="status"></div>
 <div id="print"></div>
 <script src="assets/rack-designer/vendor/qrcode.js"></script>
-<script src="assets/rack-designer/rack-designer.js?v=8"></script>
-<script src="assets/rack-designer/rack-designer-extra.js?v=8"></script>
+<script src="assets/rack-designer/rack-designer.js?v=9"></script>
+<script src="assets/rack-designer/rack-designer-extra.js?v=9"></script>
+<script src="assets/rack-designer/rack-designer-pro.js?v=9"></script>
 </body>
 </html>

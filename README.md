@@ -22,6 +22,8 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer.css` | stile (colori del tema Chirpy, modalità chiara e scura) |
 | `assets/rack-designer/rack-designer.js` | logica: regole, validatore, etichette, planimetrie, catalogo |
 | `assets/rack-designer/rack-designer-extra.js` | permutazioni, alimentazione, campus, sala, NetBox, etichette, distinta |
+| `assets/rack-designer/rack-designer-pro.js` | VLAN, RouterOS, coperture, muri, percorsi, inventario, Snipe-IT, Fluke, modelli, Gist |
+| `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
 | `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR delle targhette |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per leggere le planimetrie in PDF |
 | `assets/favicon.svg` | icona |
@@ -66,6 +68,25 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 - Etichette per Brother P-touch Editor e Dymo Connect (CSV).
 - Esportazione per NetBox: produttori, ruoli, tipi di dispositivo (YAML), sito, location, armadi,
   dispositivi e cavi (permutazioni e tratte tra armadi), da importare nell'ordine indicato.
+
+**Rete logica, inventario e collaudo**
+- VLAN e indirizzi IP: elenco con ID, nome, colore, subnet, gateway e VLAN di gestione; controllo di subnet
+  sovrapposte, gateway fuori subnet e VLAN usate ma non definite.
+- Porte degli switch in accesso o trunk (automatiche dalle permutazioni o configurate a mano),
+  IP di gestione e script RouterOS generato per gli switch MikroTik; tabella porte in CSV per gli altri.
+- Inventario per ogni apparato e armadio: asset tag, numero di serie, MAC, IP e foto (salvate nel browser,
+  incluse nell'esportazione JSON); CSV per l'importazione in Snipe-IT.
+- Importazione delle certificazioni dei cavi esportate da Fluke LinkWare (CSV): esito su ogni presa,
+  segnalazione delle prese non superate e riepilogo nel foglio di armadio.
+- Modelli di armadio: tre predefiniti e i tuoi, salvati nel browser e riutilizzabili in ogni progetto.
+- Salvataggio e apertura del progetto su GitHub Gist (token con il solo permesso Gists).
+- Installabile come app e utilizzabile offline; con la connessione si usa sempre la versione più recente.
+
+**Strumenti in planimetria**
+- Campo visivo delle telecamere (direzione, angolo, portata) e copertura Wi-Fi indicativa degli access point.
+- Muri disegnabili: bloccano il campo visivo e riducono la copertura Wi-Fi.
+- Percorsi reali dei cavi: la lunghezza si misura sul percorso tracciato invece che ad angolo retto.
+- Righello per misurare le distanze.
 
 **Vista Planimetria**
 - Carica la pianta di un piano: PNG, JPG, WebP, SVG o PDF (si sceglie la pagina).

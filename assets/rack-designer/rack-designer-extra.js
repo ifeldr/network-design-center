@@ -154,8 +154,8 @@ itemHtml=function(r,it){
   t+=inp('kg','Peso','kg',d.kg)+inp('dep','Profondità','mm',d.dep)+`<p class="piccola">Il segnaposto mostra la stima; inserisci il valore della scheda tecnica per calcoli precisi.</p></div>`;
   if(isSwitchLike(it)){
     const u=swUse(r,it.id),sp=swPorts(it),pd=poeDemand(r)[it.id];let g='';
-    for(let n=1;n<=sp.n;n++){const a=u[n];g+=`<button class="pt ${a?'note':''}" data-swport="${n}" title="${a?esc(a.map(x=>x.lab).join(', ')):'libera'}" ${a?`style="box-shadow:inset 0 -4px 0 ${COLORI[a[0].pc.col]||COLORI.blu}"`:''}>${swPortName(it,n)}${a?`<br>${esc(a[0].lab)}`:''}</button>`}
-    t+=`<div class="sez"><h3>Porte <span>${Object.keys(u).length}/${sp.n} permutate</span></h3><div class="portgrid">${g}</div>${pd?`<div class="kv" style="margin-top:8px"><span>Richiesta PoE</span><b>${fmt(pd.w)} W${s.poeb?' su '+fmt(s.poeb)+' W':''}</b></div>`:''}<p class="piccola">Le permutazioni si impostano dalle prese del patch panel; fai clic su una porta usata per aprire la presa.</p></div>`;
+    for(let n=1;n<=sp.n;n++){const a=u[n];g+=`<button class="pt ${a?'note':''} ${S.swsel&&S.swsel.it===it.id&&S.swsel.n===n?'sel':''}" data-swport="${n}" title="${a?esc(a.map(x=>x.lab).join(', ')):'libera'}" ${a?`style="box-shadow:inset 0 -4px 0 ${COLORI[a[0].pc.col]||COLORI.blu}"`:''}>${swPortName(it,n)}${a?`<br>${esc(a[0].lab)}`:''}</button>`}
+    t+=`<div class="sez"><h3>Porte <span>${Object.keys(u).length}/${sp.n} permutate</span></h3><div class="portgrid">${g}</div>${pd?`<div class="kv" style="margin-top:8px"><span>Richiesta PoE</span><b>${fmt(pd.w)} W${s.poeb?' su '+fmt(s.poeb)+' W':''}</b></div>`:''}${S.swsel&&S.swsel.it===it.id&&S.swsel.n<=sp.n&&window.NDC_swEditor?window.NDC_swEditor(r,it,S.swsel.n):'<p class="piccola">Le permutazioni si impostano dalle prese del patch panel; fai clic su una porta per configurarla.</p>'}</div>`;
   }
   return h+t;
 };
@@ -172,7 +172,7 @@ portEditor=function(r,it,n,L){
     if(sw){const u=swUse(r,sw.id);let o='';for(let k=1;k<=swPorts(sw).n;k++){const busy=u[k]&&!u[k].every(q=>q.panel.id===it.id&&q.n===n);o+=`<option value="${k}" ${+pc.n===k?'selected':''}>${swPortName(sw,k)}${busy?' — occupata ('+esc(u[k][0].lab)+')':''}</option>`}
       x+=`<div class="f"><label>Porta</label><select data-px="n">${o}</select></div>
       <div class="f"><label>Bretella</label><select data-px="col">${Object.keys(COLORI).map(c=>`<option ${(pc.col||'blu')===c?'selected':''}>${c}</option>`).join('')}</select></div>
-      <div class="f"><label>VLAN</label><input type="text" data-px="vlan" value="${esc(pc.vlan||'')}" placeholder="es. 10"></div>`}
+      <div class="f"><label>VLAN</label>${window.NDC_vlanInput?window.NDC_vlanInput(pc.vlan):`<input type="text" data-px="vlan" value="${esc(pc.vlan||'')}" placeholder="es. 10">`}</div>`}
   }
   x+='</div>';
   const k=h.lastIndexOf('</div>');return h.slice(0,k)+x+h.slice(k);
@@ -516,7 +516,8 @@ $('#modal').addEventListener('change',e=>{const t=e.target;if(t.dataset.nb){muta
 $('#leftBody').addEventListener('click',e=>{const b=e.target.closest('[data-bsel]');if(b){S.bsel=b.dataset.bsel;S.right='props';render();document.body.classList.remove('lib')}});
 document.addEventListener('click',e=>{
   const sp=e.target.closest('[data-swport]');
-  if(sp){const r=R();const sw=r.items.find(i=>i.id===S.item);const a=sw&&swUse(r,sw.id)[+sp.dataset.swport];if(a){S.item=a[0].panel.id;S.port=a[0].n;render()}return}
+  if(sp){const n=+sp.dataset.swport;S.swsel=S.swsel&&S.swsel.it===S.item&&S.swsel.n===n?null:{it:S.item,n};renderRight();return}
+  const gp=e.target.closest('[data-xa=goPort]');if(gp){const r=R();const sw=r.items.find(i=>i.id===S.item);const a=sw&&swUse(r,sw.id)[+gp.dataset.n];if(a){S.item=a[0].panel.id;S.port=a[0].n;S.swsel=null;render()}return}
   const el=e.target.closest('[data-xa]');if(!el)return;e.preventDefault();
   const a=el.dataset.xa,r=R();
   switch(a){
@@ -545,5 +546,6 @@ $('#moreMenu .menu-lista').addEventListener('click',e=>{const m=e.target.closest
   ({perms:openPerms,bom:()=>openBom('project'),labels:openLabels,netbox:openNetbox,campus:()=>{S.view='campus';render()}})[m]?.()});
 
 /* ---------------- avvio ---------------- */
+window.NDC={perms,swUse,swPorts,swPortName,isSwitchLike,spec,power,backbones,extraSheet,qrSvg,qrText,csv,letters,bInfo,COLORI,normX};
 (function go(){if(!P){setTimeout(go,30);return}normX(P);render()})();
 })();

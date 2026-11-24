@@ -969,7 +969,7 @@ function renderPlan(){
   const I=validatePlan(pl);const bad={};I.forEach(i=>{if(i.id&&(i.lvl==='err'||i.lvl==='warn'))bad[i.id]=1});
   let cav='',mk='';
   const devs=P.devices.filter(d=>d.plan===pl.id);
-  if(P.cables)devs.forEach(d=>{const p=devPort(d);if(!p||!p.r.loc||p.r.loc.plan!==pl.id)return;const ci=cableInfo(d);const col=ci.st==='err'?'#dc3545':ci.st==='warn'?'#e8a200':TCOL[p.r.type];
+  if(P.cables)devs.forEach(d=>{if(d.route&&d.route.length)return;const p=devPort(d);if(!p||!p.r.loc||p.r.loc.plan!==pl.id)return;const ci=cableInfo(d);const col=ci.st==='err'?'#dc3545':ci.st==='warn'?'#e8a200':TCOL[p.r.type];
     const sel=S.mk==='mk:'+d.id||S.mk==='rk:'+p.r.id;
     cav+=`<path d="M${p.r.loc.x} ${p.r.loc.y} H${d.x} V${d.y}" fill="none" stroke="${col}" stroke-width="${sel?3.5:2}" stroke-dasharray="${sel?'':'7 5'}" vector-effect="non-scaling-stroke" opacity="${sel?1:.75}"/>`});
   P.racks.filter(r=>r.loc&&r.loc.plan===pl.id).forEach(r=>{const k='rk:'+r.id;
@@ -1598,7 +1598,7 @@ async function planCanvas(pl,maxDim=3200){
   const s=Math.min(1,maxDim/Math.max(pl.w,pl.h));const c=document.createElement('canvas');c.width=Math.round(pl.w*s);c.height=Math.round(pl.h*s);
   const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);ctx.globalAlpha=pl.opacity??1;ctx.drawImage(im,0,0,c.width,c.height);ctx.globalAlpha=1;ctx.scale(s,s);
   const u=Math.max(pl.w,pl.h)/1100;const devs=P.devices.filter(d=>d.plan===pl.id);
-  if(P.cables)devs.forEach(d=>{const p=devPort(d);if(!p||!p.r.loc||p.r.loc.plan!==pl.id)return;const ci=cableInfo(d);ctx.strokeStyle=ci.st==='err'?'#dc3545':ci.st==='warn'?'#e8a200':TCOL[p.r.type];ctx.lineWidth=2*u;ctx.setLineDash([7*u,5*u]);ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(p.r.loc.x,p.r.loc.y);ctx.lineTo(d.x,p.r.loc.y);ctx.lineTo(d.x,d.y);ctx.stroke();ctx.globalAlpha=1});
+  if(P.cables)devs.forEach(d=>{if(d.route&&d.route.length)return;const p=devPort(d);if(!p||!p.r.loc||p.r.loc.plan!==pl.id)return;const ci=cableInfo(d);ctx.strokeStyle=ci.st==='err'?'#dc3545':ci.st==='warn'?'#e8a200':TCOL[p.r.type];ctx.lineWidth=2*u;ctx.setLineDash([7*u,5*u]);ctx.globalAlpha=.8;ctx.beginPath();ctx.moveTo(p.r.loc.x,p.r.loc.y);ctx.lineTo(d.x,p.r.loc.y);ctx.lineTo(d.x,d.y);ctx.stroke();ctx.globalAlpha=1});
   ctx.setLineDash([]);
   const label=(x,y,t,sub)=>{ctx.font=`bold ${11*u}px monospace`;const w=Math.max(ctx.measureText(t).width,sub?(ctx.font=`${10*u}px sans-serif`,ctx.measureText(sub).width):0)+8*u;const h=(sub?28:16)*u;ctx.fillStyle='rgba(255,251,224,.95)';ctx.strokeStyle='#cfc68a';ctx.lineWidth=u;ctx.fillRect(x-w/2,y,w,h);ctx.strokeRect(x-w/2,y,w,h);ctx.fillStyle='#222';ctx.textAlign='center';ctx.textBaseline='top';ctx.font=`bold ${11*u}px monospace`;ctx.fillText(t,x,y+3*u);if(sub){ctx.font=`${10*u}px sans-serif`;ctx.fillStyle='#555';ctx.fillText(sub,x,y+15*u)}};
   const dot=(x,y,col,sq)=>{ctx.fillStyle=col;ctx.strokeStyle='#fff';ctx.lineWidth=2*u;ctx.beginPath();if(sq)ctx.rect(x-11*u,y-11*u,22*u,22*u);else ctx.arc(x,y,12*u,0,7);ctx.fill();ctx.stroke()};

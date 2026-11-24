@@ -1,0 +1,14 @@
+{
+  "name": "Network Design Center",
+  "short_name": "Network Design",
+  "description": "Progetta, verifica ed etichetta gli armadi di rete e posiziona armadi, prese e apparati sulla planimetria.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0d6efd",
+  "icons": [
+    { "src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

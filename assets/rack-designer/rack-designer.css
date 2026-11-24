@@ -440,3 +440,4 @@ details.tpl summary{cursor:pointer;color:var(--tenue);font-size:13.5px}
   #print .avoid{break-inside:avoid}
   #print img.pianta{max-width:100%;max-height:240mm;display:block;margin:6px auto;border:1px solid #999}
 }
+.btn.lang{font-weight:700;font-size:12.5px;letter-spacing:.04em}

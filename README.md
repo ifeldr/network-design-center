@@ -23,10 +23,23 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer.js` | logica: regole, validatore, etichette, planimetrie, catalogo |
 | `assets/rack-designer/rack-designer-extra.js` | permutazioni, alimentazione, campus, sala, NetBox, etichette, distinta |
 | `assets/rack-designer/rack-designer-pro.js` | VLAN, RouterOS, coperture, muri, percorsi, inventario, Snipe-IT, Fluke, modelli, Gist |
+| `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
 | `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR delle targhette |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per leggere le planimetrie in PDF |
 | `assets/favicon.svg` | icona |
+
+## Lingua / Language
+
+Interfaccia in italiano e in inglese: pulsante **EN / IT** nella testata. La scelta resta salvata
+nel browser; alla prima visita vale la lingua del browser. Si può forzare con `?lang=en` o `?lang=it`.
+
+The interface is available in Italian and English: use the **EN / IT** button in the header.
+The choice is remembered in the browser; on the first visit the browser language is used.
+You can force it with `?lang=en` or `?lang=it`.
+
+Per aggiungere o correggere una traduzione basta modificare il dizionario `D` in `i18n.js`, una voce per riga
+(testo italiano → testo inglese).
 
 ## Funzioni
 

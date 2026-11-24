@@ -1,5 +1,5 @@
 /* =====================================================================
-   Rack Designer — allestimento ed etichettatura degli armadi di rete, con planimetrie
+   Network Design Center — allestimento ed etichettatura degli armadi di rete, con planimetrie
    Pagina statica per GitHub Pages: progetto in localStorage, planimetrie in IndexedDB.
    ===================================================================== */
 'use strict';
@@ -1194,7 +1194,7 @@ function renderFoot(){
   if(S.view==='rack'){const r=R();const I=r._issues;const used=r.items.reduce((s,i)=>s+i.h,0);
     st=`<span>Armadio <b class="mono">${rid(r)}</b></span><span class="hide-sm">Occupazione <b>${used}/${r.units} U</b></span><span>Conformità <b style="color:${score(I)>=90?'var(--ok)':score(I)>=60?'var(--warn)':'var(--err)'}">${score(I)}%</b></span>`}
   else{const pl=PL();if(pl){const I=validatePlan(pl);st=`<span><b>${esc(pl.name)}</b></span><span class="hide-sm">${P.devices.filter(d=>d.plan===pl.id).length} elementi</span><span>Conformità <b style="color:${score(I)>=90?'var(--ok)':score(I)>=60?'var(--warn)':'var(--err)'}">${score(I)}%</b></span>`}}
-  $('#foot').innerHTML=`<span>© ${new Date().getFullYear()} <a href="${SITO}">Lorenzo Garbi</a></span><span class="hide-sm">Rack Designer</span><a href="${CAFFE}" target="_blank" rel="noopener">☕ Offrimi un caffè</a><span class="sp"></span>${st}`;
+  $('#foot').innerHTML=`<span>© ${new Date().getFullYear()} <a href="${SITO}">Lorenzo Garbi</a></span><span class="hide-sm">Network Design Center</span><a href="${CAFFE}" target="_blank" rel="noopener">☕ Offrimi un caffè</a><span class="sp"></span>${st}`;
 }
 
 /* ---------------- vista armadio (rendering riusato) ---------------- */

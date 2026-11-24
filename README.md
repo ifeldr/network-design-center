@@ -1,4 +1,4 @@
-# Rack Designer
+# Network Design Center
 
 Pagina per progettare, verificare ed etichettare gli armadi di rete e per posizionare armadi,
 prese e apparati sulla planimetria dei piani.
@@ -11,7 +11,7 @@ Pagina statica (HTML, CSS e JavaScript, nessun backend): stile e colori sono que
 ## Pubblicazione
 
 *Settings → Pages → Deploy from a branch*, branch `main`, cartella `/ (root)`.
-Nel sito principale la pagina è raggiungibile dal menu **Progetti → Rack Designer**
+Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network Design Center**
 (`_tabs/rack-designer.md` nel repository `ifeldr.github.io`).
 
 ## File

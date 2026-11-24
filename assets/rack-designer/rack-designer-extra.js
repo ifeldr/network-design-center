@@ -1,5 +1,5 @@
 /* =====================================================================
-   Rack Designer — funzioni avanzate
+   Network Design Center — funzioni avanzate
    Si aggancia a rack-designer.js sostituendo alcune funzioni globali
    (validate, rackHtml, itemHtml, render…) e aggiungendo:
    • permutazioni presa → porta switch (colore bretella, VLAN)

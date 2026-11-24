@@ -1170,7 +1170,26 @@ const D={
 "switch 8 porte PoE + 2 SFP": "8-port PoE switch + 2 SFP",
 "switch 10G 4 porte PoE + 2 SFP+": "10G switch, 4 PoE ports + 2 SFP+",
 "switch 10G 5 porte da tavolo": "5-port 10G desktop switch",
-"switch 8 porte + 2 SFP da tavolo": "8-port + 2 SFP desktop switch"
+"switch 8 porte + 2 SFP da tavolo": "8-port + 2 SFP desktop switch",
+"10/100 PoE, 2 porte combo Gigabit": "10/100 PoE, 2 Gigabit combo ports",
+"NVR 16 canali con 16 PoE, 2 dischi": "NVR 16 channels with 16 PoE, 2 drives",
+"NVR 16 canali con 16 PoE, 4 dischi — 1,5 U, occupa 2 U": "NVR 16 channels with 16 PoE, 4 drives — 1.5 U, takes 2 U",
+"NVR 16 canali, 8 dischi": "NVR 16 channels, 8 drives",
+"NVR 32 canali, 16 dischi": "NVR 32 channels, 16 drives",
+"NVR 64 canali, 16 dischi": "NVR 64 channels, 16 drives",
+"NVR 8 canali con 8 PoE, 2 dischi": "NVR 8 channels with 8 PoE, 2 drives",
+"NVR da tavolo, 4 canali con 4 PoE": "desktop NVR, 4 channels with 4 PoE",
+"NVR da tavolo, 8 canali con 8 PoE": "desktop NVR, 8 channels with 8 PoE",
+"bullet ColorVu 4 MP": "ColorVu bullet 4 MP",
+"bullet varifocale 4 MP": "varifocal bullet 4 MP",
+"cubo Wi-Fi 2 MP": "Wi-Fi cube 2 MP",
+"monitor videocitofono": "video intercom indoor monitor",
+"posto esterno videocitofono": "video intercom door station",
+"posto esterno videocitofono modulare": "modular video intercom door station",
+"speed dome PTZ 2 MP": "PTZ speed dome 2 MP",
+"speed dome PTZ 4 MP": "PTZ speed dome 4 MP",
+"switch 8 porte PoE + 1 uplink": "8-port PoE switch + 1 uplink",
+"switch 8 porte PoE + 2 uplink": "8-port PoE switch + 2 uplinks"
 };
 /* lower/upper-case variants */
 for(const k of Object.keys(D)){const v=D[k];const c=k.charAt(0);

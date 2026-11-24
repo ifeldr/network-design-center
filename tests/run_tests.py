@@ -106,7 +106,7 @@ async def test_core(c):
     await pg.evaluate("S.rear=true;render()"); await pg.evaluate("S.rear=false;S.room=true;render()"); await pg.evaluate("S.room=false;render()")
     check('vista posteriore e sala', not c.errors, '; '.join(c.errors))
     # finestre del menu
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'campo', 'campoImp']:
         await c.menu(m)
         ok = await pg.evaluate("document.getElementById('modal').classList.contains('open')") and not c.errors
         check(f'finestra «{m}»', ok, '; '.join(c.errors))
@@ -230,6 +230,10 @@ async def test_english(c):
         await c.menu(m); await sweep('menu ' + m)
     await pg.keyboard.press('Escape')
     await c.menu('umodels'); await pg.click('#mBody [data-ux=mNew]'); await pg.wait_for_timeout(150); await sweep('nuovo modello')
+    await pg.click('.dialogo-t [data-close]')
+    await pg.evaluate("NDC_field.openField()"); await pg.wait_for_timeout(200); await sweep('sopralluogo home')
+    await pg.click('[data-fc=plan]'); await pg.wait_for_timeout(300); await sweep('sopralluogo pianta')
+    await pg.evaluate("NDC_field.closeField()")
     await pg.keyboard.press('Escape')
     for v in ['plan', 'campus']:
         await pg.click(f'[data-view={v}]'); await pg.wait_for_timeout(300); await sweep('vista ' + v)
@@ -305,11 +309,66 @@ async def test_tools(c):
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 
+async def test_field(c):
+    pg = c.pg
+    print('— sopralluogo da telefono')
+    await c.open('it')
+    await pg.click('[data-lt=racks]'); await pg.select_option('#tplPick', 'b-fd24'); await pg.wait_for_timeout(300)
+    await pg.evaluate(BUILD)
+    await pg.evaluate("""()=>{const r=R();const pp=r.items.find(i=>i.kind==='patch');for(let i=3;i<=6;i++)P.devices.push({id:'to'+i,kind:'to',plan:'plT',x:200+i*150,y:300,name:'',rack:r.id,item:pp.id,port:i});save();render()}""")
+    proj = await pg.evaluate("JSON.stringify(P)")
+    # telefono
+    ctx = await pg.context.browser.new_context(viewport={'width': 390, 'height': 844}, is_mobile=True, has_touch=True, accept_downloads=True)
+    ph = await ctx.new_page(); ph.on('pageerror', lambda e: c.errors.append('telefono: ' + str(e))); ph.on('dialog', lambda d: asyncio.ensure_future(d.accept()))
+    await ph.route(re.compile(r'^https?://(?!127\.0\.0\.1)'), lambda r: r.abort())
+    await ph.goto(c.base + '?lang=it'); await ph.wait_for_function('typeof P!=="undefined" && P && P.racks')
+    await ph.evaluate(f"(()=>{{P=normalize(JSON.parse({json.dumps(proj)}));save();return 0}})()")
+    await ph.goto(c.base + '?campo=1'); await ph.wait_for_selector('#campo:not([hidden])')
+    check('modalità sopralluogo aperta con ?campo=1', await ph.is_visible('[data-fc=plan]'))
+    await ph.fill('#fcAut', 'Tecnico'); await ph.press('#fcAut', 'Tab')
+    await ph.click('[data-fc=plan]'); await ph.wait_for_timeout(400)
+    mk = await ph.query_selector('[data-fk] i'); bx = await mk.bounding_box()
+    await ph.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2); await ph.wait_for_timeout(200)
+    check('scheda della presa al tocco', await ph.is_visible('#fcSheet'))
+    await ph.click('[data-fst=prob]'); await ph.click('[data-fpr="Cavo corto"]'); await ph.fill('#fcNote', 'manca cavo'); await ph.press('#fcNote', 'Tab'); await ph.wait_for_timeout(150)
+    jpg = os.path.join(OUT, 'foto.jpg')
+    try:
+        from PIL import Image; Image.new('RGB', (2400, 1600), (30, 90, 160)).save(jpg)
+        await ph.set_input_files('#fcPh', jpg); await ph.wait_for_timeout(600)
+    except ImportError:
+        pass
+    await ph.click('[data-fc=home]'); await ph.click('[data-fc=rack] >> nth=1'); await ph.wait_for_timeout(200)
+    for i in (4, 5):
+        await ph.click(f'.fc-pt >> nth={i}'); await ph.click('[data-fst=cert]'); await ph.wait_for_timeout(100)
+    await ph.screenshot(path=os.path.join(OUT, 'sopralluogo.png'))
+    await ph.click('[data-fc=home]')
+    async with ph.expect_download() as d:
+        await ph.click('[data-fc=pack]')
+    pk = os.path.join(OUT, 'sopralluogo.json'); await (await d.value).save_as(pk); j = json.load(open(pk))
+    check('file del sopralluogo', j.get('kind') == 'ndc-sopralluogo' and len(j['entries']) >= 5, str(len(j.get('entries', []))))
+    await ctx.close()
+    # PC
+    async with pg.expect_file_chooser() as fc:
+        await c.menu('campoImp'); await pg.click('[data-fi=file]')
+    await (await fc.value).set_files(pk); await pg.wait_for_timeout(400)
+    await pg.click('[data-fi=apply]'); await pg.wait_for_timeout(300)
+    sts = await pg.evaluate("Object.values(P.field||{}).map(f=>f.st)")
+    check('sopralluogo unito al progetto', sts.count('cert') == 2 and 'prob' in sts, str(sts))
+    check('foto del sopralluogo salvate', await pg.evaluate("Promise.all(Object.values(P.field).flatMap(f=>f.photos||[]).map(id=>DB.get(id))).then(a=>a.length>0&&a.every(Boolean))") or not os.path.exists(jpg))
+    async with pg.expect_file_chooser() as fc:
+        await c.menu('campoImp'); await pg.click('[data-fi=file]')
+    await (await fc.value).set_files(pk); await pg.wait_for_timeout(300)
+    check('reimportazione senza duplicati', 'già stato importato' in await pg.inner_text('#fiOut'))
+    await pg.click('.dialogo-t [data-close]')
+    check('avanzamento nella relazione', '1 con problemi' in await pg.evaluate("NDC_field.reportHtml()"))
+    check('nessun errore', not c.errors, '; '.join(c.errors))
+
+
 async def main():
     srv, base = serve()
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for fn in (test_core, test_projects, test_tools, test_english):
+        for fn in (test_core, test_projects, test_tools, test_field, test_english):
             pg = await b.new_page(viewport={'width': 1500, 'height': 920}, accept_downloads=True)
             c = Ctx(pg, base)
             pg.on('pageerror', lambda e, c=c: c.errors.append(str(e)))

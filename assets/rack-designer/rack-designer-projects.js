@@ -137,6 +137,10 @@ function diffProjects(A,B){
   const va=Object.fromEntries((A.vlans||[]).map(v=>[v.id,v]));const gv=()=>grp('vl','VLAN');
   for(const v of B.vlans||[]){const o=va[v.id];if(!o)add(gv(),'+',`VLAN ${v.vid} «${v.name||''}» aggiunta`);else if(!same(o,v))add(gv(),'~',`VLAN ${v.vid} «${v.name||''}» modificata`)}
   for(const o of A.vlans||[])if(!(B.vlans||[]).some(v=>v.id===o.id))add(gv(),'-',`VLAN ${o.vid} «${o.name||''}» eliminata`);
+  {const fa=A.field||{},fb=B.field||{};const ch={};let ph=0;Object.keys(fb).forEach(k=>{const x=fa[k]||{},y=fb[k];if((x.st||'todo')!==(y.st||'todo'))ch[y.st||'todo']=(ch[y.st||'todo']||0)+1;ph+=Math.max(0,(y.photos||[]).length-(x.photos||[]).length)});
+    const lab={todo:'da fare',posata:'posate / installate',cert:'certificate / collaudate',attiva:'attive',prob:'con problemi'};const tot=Object.values(ch).reduce((s,n)=>s+n,0);
+    if(tot)add(grp('fl','Sopralluogo'),'~',`Stato aggiornato per ${tot} prese e apparati: ${Object.entries(ch).map(([s,n])=>n+' '+lab[s]).join(', ')}`);
+    if(ph)add(grp('fl','Sopralluogo'),'+',`Foto del sopralluogo: ${ph}`)}
   const out=G.filter(g=>g.lines.length);
   return {groups:out,n:out.reduce((s,g)=>s+g.lines.length,0)};
 }

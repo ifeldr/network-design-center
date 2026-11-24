@@ -1426,7 +1426,7 @@ function save(){try{P.pid??=uid();localStorage.setItem(PKEY(P.pid),JSON.stringif
 function openProject(id){const j=projGet(id);if(!j)return false;j.pid=id;P=normalize(j);S.rack=P.racks[0]?.id;S.plan=P.plans[0]?.id||null;S.item=null;S.port=null;S.mk=null;S.pz={};S.hist=[];S.fut=[];S.calib=null;S.placing=null;try{localStorage.setItem(PCUR,id)}catch(_){}render();return true}
 function newProject(){blankProject();P.pid=uid();save();render()}
 /* immagini e foto usate da altri progetti salvati (o dalle versioni): non si cancellano */
-function imgRefs(p){const s=new Set();(p.plans||[]).forEach(x=>s.add(x.id));const ph=o=>(o.photos||[]).forEach(x=>s.add(x));(p.racks||[]).forEach(r=>{ph(r);(r.items||[]).forEach(ph)});(p.devices||[]).forEach(ph);return s}
+function imgRefs(p){const s=new Set();(p.plans||[]).forEach(x=>s.add(x.id));const ph=o=>(o.photos||[]).forEach(x=>s.add(x));(p.racks||[]).forEach(r=>{ph(r);(r.items||[]).forEach(ph)});(p.devices||[]).forEach(ph);Object.values(p.field||{}).forEach(ph);return s}
 function usedElsewhere(k){k=String(k);if(k.startsWith('ver:'))return true;return projIndex().some(x=>x.id!==P?.pid&&imgRefs(projGet(x.id)||{}).has(k))}
 {const _d=DB.del.bind(DB);DB.del=async k=>{if(usedElsewhere(k))return;return _d(k)};DB.purge=_d}
 function mutate(fn){

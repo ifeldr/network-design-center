@@ -120,7 +120,7 @@ const _curIssues=curIssues;curIssues=function(){const I=_curIssues();return S.vi
 
 /* ---------------- inventario e foto ---------------- */
 const _del=DB.del.bind(DB);
-const photoIds=()=>{const s=new Set();P.racks.forEach(r=>{(r.photos||[]).forEach(x=>s.add(x));r.items.forEach(i=>(i.photos||[]).forEach(x=>s.add(x)))});P.devices.forEach(d=>(d.photos||[]).forEach(x=>s.add(x)));return s};
+const photoIds=()=>{const s=new Set();P.racks.forEach(r=>{(r.photos||[]).forEach(x=>s.add(x));r.items.forEach(i=>(i.photos||[]).forEach(x=>s.add(x)))});P.devices.forEach(d=>(d.photos||[]).forEach(x=>s.add(x)));Object.values(P.field||{}).forEach(f=>(f.photos||[]).forEach(x=>s.add(x)));return s};
 DB.del=k=>String(k).startsWith('ph:')&&photoIds().has(k)?Promise.resolve():_del(k);
 let photoTarget=null;
 const fin=document.createElement('input');fin.type='file';fin.accept='image/*';fin.multiple=true;fin.hidden=true;document.body.appendChild(fin);

@@ -25,6 +25,8 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer-pro.js` | VLAN, RouterOS, coperture, muri, percorsi, inventario, Snipe-IT, Fluke, modelli, Gist |
 | `assets/rack-designer/rack-designer-projects.js` | più progetti nel browser, versioni con confronto, ricerca globale |
 | `assets/rack-designer/rack-designer-tools.js` | modelli personalizzati, archiviazione videosorveglianza, piano IP, importazione prese da Excel/CSV, relazione completa |
+| `assets/rack-designer/rack-designer-field.js` | modalità sopralluogo da telefono, importazione del sopralluogo sul PC |
+| `assets/rack-designer/vendor/jsQR.min.js` | jsQR 1.4 (Apache 2.0) per leggere i QR sugli iPhone, caricato solo quando serve |
 | `tests/run_tests.py`, `.github/workflows/test.yml` | test automatici (Playwright) eseguiti da GitHub Actions a ogni push |
 | `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
@@ -66,6 +68,26 @@ nella versione inglese. Lo stesso test gira su GitHub Actions a ogni push (sched
   anteprima con l'esito di ogni riga, poi i locali vengono scritti sulle prese e nel registro modifiche.
 - **Relazione completa**: copertina con riepilogo e indice, planimetrie, fogli di armadio, distinta
   materiali, piano IP, archiviazione e segnalazioni, da stampare o salvare in PDF.
+
+## Sopralluogo da telefono
+
+1. **Porta il progetto sul telefono**, una volta: con GitHub Gist (salva dal PC, apri dal telefono) oppure
+   esportando il JSON con le planimetrie e importandolo sul telefono.
+2. **Apri la modalità sopralluogo**: menu ⋯ → «Modalità sopralluogo», oppure `?campo=1` nell'indirizzo (il PC
+   mostra il QR da inquadrare). Installata come app funziona anche senza rete.
+   - elenco di planimetrie e armadi con l'avanzamento;
+   - planimetria a tutto schermo con zoom a due dita, prese e apparati colorati per stato;
+   - tocco su una presa: **Posata, Certificata, Attiva, Problema** (con il motivo), nota, foto dalla fotocamera
+     (ridotte a 1600 px), altezza di montaggio per access point e telecamere, spostamento sulla pianta;
+   - QR della targhetta per aprire l'elenco prese dell'armadio.
+3. **Riporta il lavoro sul PC**: dal telefono «Condividi/Scarica il file del sopralluogo» o «Invia con GitHub
+   Gist»; sul PC menu ⋯ → «Importa sopralluogo…». Ogni azione è una voce con data, ora e autore: vengono aggiunte
+   solo quelle nuove (una seconda importazione non duplica nulla) e, se la stessa presa è stata cambiata anche
+   dal PC, vale la modifica più recente.
+
+Sul PC lo stato compare come anello colorato sugli elementi in pianta e sulle porte del patch panel, con una
+sezione «Sopralluogo» nelle proprietà; la relazione completa ha la sezione «Avanzamento lavori» e le versioni
+registrano i cambi di stato.
 
 ## Lingua / Language
 

@@ -3,7 +3,7 @@
 Pagina per progettare, verificare ed etichettare gli armadi di rete e per posizionare armadi,
 prese e apparati sulla planimetria dei piani.
 È collegata al sito principale https://ifeldr.github.io ma vive in questo repository separato,
-all'indirizzo https://ifeldr.github.io/rack-designer/.
+all'indirizzo https://ifeldr.github.io/Rack-Designer/.
 
 Pagina statica (HTML, CSS e JavaScript, nessun backend): stile e colori sono quelli del sito
 (tema Chirpy, carattere Source Sans 3, modalità scura automatica).

@@ -1074,7 +1074,10 @@ let tt,quiet=false;function toast(m){if(quiet)return;const t=$('#toast');t.textC
   try{const uh=+localStorage.getItem('rd-uh');if(uh)S.uh=uh}catch(_){}
   if(!(await loadFromHash())){
     let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE))}catch(_){}
-    if(saved&&saved.racks?.length){P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else blankProject();
+    // il vecchio progetto di esempio, se ancora salvato nel browser, viene scartato
+    const esempio=saved&&saved.name==='Sede di esempio'&&(saved.racks||[]).some(r=>/^Centro stella edificio A/.test(r.note||''));
+    if(esempio){try{localStorage.removeItem(STORE)}catch(_){}(saved.plans||[]).forEach(p=>DB.del(p.id))}
+    if(saved&&saved.racks?.length&&!esempio){P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else blankProject();
   }
   if(innerWidth<820)S.uh=Math.min(S.uh,20);
   render();

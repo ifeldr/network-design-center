@@ -340,9 +340,9 @@ async def test_field(c):
     except ImportError:
         pass
     await ph.click('[data-fc=shClose]'); await ph.wait_for_timeout(100)
-    mk2 = ph.locator('[data-fk] i').nth(1); bx = await mk2.bounding_box(); await ph.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2); await ph.wait_for_timeout(150)
+    await ph.evaluate("NDC_field.select(NDC_field.keyOfDev(P.devices.find(d=>d.id==='to4')))"); await ph.wait_for_timeout(100)
     await ph.click('[data-fst=assente]'); await ph.wait_for_timeout(100)
-    mk3 = ph.locator('[data-fk] i').nth(2); bx = await mk3.bounding_box(); await ph.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2); await ph.wait_for_timeout(150)
+    await ph.evaluate("NDC_field.select(NDC_field.keyOfDev(P.devices.find(d=>d.id==='to5')))"); await ph.wait_for_timeout(100)
     await ph.click('[data-fc=mv]'); vpb = await ph.locator('#fcIn').bounding_box(); await ph.mouse.click(vpb['x'] + vpb['width'] * .2, vpb['y'] + vpb['height'] * .7); await ph.wait_for_timeout(150)
     await ph.click('[data-fc=add]'); await ph.mouse.click(vpb['x'] + vpb['width'] * .8, vpb['y'] + vpb['height'] * .3); await ph.wait_for_timeout(150)
     await ph.click('[data-fkind=ap]'); await ph.fill('#fcNote', 'AP non previsto'); await ph.press('#fcNote', 'Tab'); await ph.wait_for_timeout(150)

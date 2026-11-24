@@ -345,7 +345,7 @@ function applyReal(){
 document.addEventListener('click',e=>{const b=e.target.closest('[data-fr2]');if(b&&b.dataset.fr2==='apply')applyReal()});
 /* ---------------- menu e avvio ---------------- */
 $('#moreMenu .menu-lista').addEventListener('click',e=>{const m=e.target.closest('[data-m]')?.dataset.m;({campo:()=>innerWidth<820?openField():openFieldInfo(),campoImp:openImportField,real:openReal})[m]?.()});
-window.NDC_field={realDiff,openReal,applyReal,openField,closeField,openFieldInfo,openImportField,addEntry,applyEntry,info,keyOfDev,counts,planTargets,rackTargets,pack,loadPack,applyPack,reportHtml,stOf};
+window.NDC_field={select:(k)=>{FS.sel=k;drawField()},realDiff,openReal,applyReal,openField,closeField,openFieldInfo,openImportField,addEntry,applyEntry,info,keyOfDev,counts,planTargets,rackTargets,pack,loadPack,applyPack,reportHtml,stOf};
 (function go(){if(!P){setTimeout(go,30);return}
   if(new URLSearchParams(location.search).get('campo')==='1'){openField();try{history.replaceState(null,'',location.pathname+location.hash)}catch(_){}}})();
 })();

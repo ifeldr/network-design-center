@@ -106,7 +106,7 @@ async def test_core(c):
     await pg.evaluate("S.rear=true;render()"); await pg.evaluate("S.rear=false;S.room=true;render()"); await pg.evaluate("S.room=false;render()")
     check('vista posteriore e sala', not c.errors, '; '.join(c.errors))
     # finestre del menu
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'campo', 'campoImp']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'gist', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'campo', 'campoImp', 'real', 'backup']:
         await c.menu(m)
         ok = await pg.evaluate("document.getElementById('modal').classList.contains('open')") and not c.errors
         check(f'finestra «{m}»', ok, '; '.join(c.errors))
@@ -226,7 +226,7 @@ async def test_english(c):
     for i in range(await pg.evaluate("document.querySelectorAll('#bay .it').length")):
         await pg.evaluate(f"document.querySelectorAll('#bay .it')[{i}].dispatchEvent(new MouseEvent('click',{{bubbles:true}}))")
         await pg.wait_for_timeout(60); await sweep(f'elemento {i}')
-    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report']:
+    for m in ['topo', 'perms', 'bom', 'labels', 'netbox', 'vlans', 'swcfg', 'help', 'projects', 'versions', 'umodels', 'cctv', 'ipplan', 'report', 'real', 'backup']:
         await c.menu(m); await sweep('menu ' + m)
     await pg.keyboard.press('Escape')
     await c.menu('umodels'); await pg.click('#mBody [data-ux=mNew]'); await pg.wait_for_timeout(150); await sweep('nuovo modello')
@@ -339,6 +339,13 @@ async def test_field(c):
         await ph.set_input_files('#fcPh', jpg); await ph.wait_for_timeout(600)
     except ImportError:
         pass
+    await ph.click('[data-fc=shClose]'); await ph.wait_for_timeout(100)
+    mk2 = ph.locator('[data-fk] i').nth(1); bx = await mk2.bounding_box(); await ph.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2); await ph.wait_for_timeout(150)
+    await ph.click('[data-fst=assente]'); await ph.wait_for_timeout(100)
+    mk3 = ph.locator('[data-fk] i').nth(2); bx = await mk3.bounding_box(); await ph.mouse.click(bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2); await ph.wait_for_timeout(150)
+    await ph.click('[data-fc=mv]'); vpb = await ph.locator('#fcIn').bounding_box(); await ph.mouse.click(vpb['x'] + vpb['width'] * .2, vpb['y'] + vpb['height'] * .7); await ph.wait_for_timeout(150)
+    await ph.click('[data-fc=add]'); await ph.mouse.click(vpb['x'] + vpb['width'] * .8, vpb['y'] + vpb['height'] * .3); await ph.wait_for_timeout(150)
+    await ph.click('[data-fkind=ap]'); await ph.fill('#fcNote', 'AP non previsto'); await ph.press('#fcNote', 'Tab'); await ph.wait_for_timeout(150)
     await ph.click('[data-fc=home]'); await ph.click('[data-fc=rack] >> nth=1'); await ph.wait_for_timeout(200)
     for i in (4, 5):
         await ph.click(f'.fc-pt >> nth={i}'); await ph.click('[data-fst=cert]'); await ph.wait_for_timeout(100)
@@ -353,7 +360,14 @@ async def test_field(c):
     async with pg.expect_file_chooser() as fc:
         await c.menu('campoImp'); await pg.click('[data-fi=file]')
     await (await fc.value).set_files(pk); await pg.wait_for_timeout(400)
-    await pg.click('[data-fi=apply]'); await pg.wait_for_timeout(300)
+    await pg.click('[data-fi=apply]'); await pg.wait_for_timeout(600)
+    try:
+        await pg.wait_for_function("document.querySelector('#modal.open #mTitle')?.textContent.includes('realtà')", timeout=5000); ok = True
+    except Exception:
+        ok = False
+    check('confronto aperto dopo l\'importazione', ok, await pg.evaluate("document.querySelector('#mTitle')?.textContent"))
+    if await pg.evaluate("document.getElementById('modal').classList.contains('open')"):
+        await pg.click('.dialogo-t [data-close]')
     sts = await pg.evaluate("Object.values(P.field||{}).map(f=>f.st)")
     check('sopralluogo unito al progetto', sts.count('cert') == 2 and 'prob' in sts, str(sts))
     check('foto del sopralluogo salvate', await pg.evaluate("Promise.all(Object.values(P.field).flatMap(f=>f.photos||[]).map(id=>DB.get(id))).then(a=>a.length>0&&a.every(Boolean))") or not os.path.exists(jpg))
@@ -363,6 +377,34 @@ async def test_field(c):
     check('reimportazione senza duplicati', 'già stato importato' in await pg.inner_text('#fiOut'))
     await pg.click('.dialogo-t [data-close]')
     check('avanzamento nella relazione', '1 con problemi' in await pg.evaluate("NDC_field.reportHtml()"))
+    d = await pg.evaluate("(()=>{const d=NDC_field.realDiff();return [d.moved.length,d.missing.length,d.extra.length]})()")
+    check('confronto progetto e realtà', d == [1, 1, 1], str(d))
+    nd = await pg.evaluate('P.devices.length')
+    await c.menu('real'); await pg.select_option('[data-rd^="ab:"]', 'delete'); await pg.click('[data-fr2=apply]'); await pg.wait_for_timeout(200)
+    check('scelte applicate al progetto', await pg.evaluate('P.devices.length') == nd and await pg.evaluate("P.devices.some(x=>x.kind==='ap'&&x.name==='AP non previsto')"))
+    # copia e incolla tra progetti
+    M = 'Control'
+    await pg.click('[data-view=rack]'); await pg.wait_for_timeout(200)
+    ids = await pg.eval_on_selector_all('#bay .it[data-id]', 'e=>e.map(x=>x.dataset.id)')
+    await pg.locator(f'#bay .it[data-id="{ids[3]}"]').click(); await pg.locator(f'#bay .it[data-id="{ids[4]}"]').click(modifiers=[M])
+    await pg.keyboard.press(f'{M}+c'); await pg.wait_for_timeout(100)
+    await pg.evaluate('newProject()'); await pg.wait_for_timeout(200)
+    await pg.keyboard.press(f'{M}+v'); await pg.wait_for_timeout(200)
+    check('copia e incolla tra progetti', await pg.evaluate('R().items.length') == 2)
+    await pg.keyboard.press(f'{M}+a'); await pg.keyboard.press(f'{M}+x'); await pg.wait_for_timeout(150)
+    check('taglia', await pg.evaluate('R().items.length') == 0)
+    await pg.keyboard.press(f'{M}+v'); await pg.wait_for_timeout(150)
+    check('incolla dopo taglia', await pg.evaluate('R().items.length') == 2)
+    # backup e ripristino
+    async with pg.expect_download() as dl:
+        await pg.evaluate('NDC_clip.backupFile()')
+    bp = os.path.join(OUT, 'backup.json'); await (await dl.value).save_as(bp); bk = json.load(open(bp))
+    check('backup di tutti i progetti', bk.get('kind') == 'ndc-backup' and len(bk['projects']) == 2 and len(bk.get('images', {})) >= 1)
+    await c.menu('backup'); await pg.evaluate('window.confirm=()=>false;0')
+    async with pg.expect_file_chooser() as fc:
+        await pg.click('[data-bk=restore]')
+    await (await fc.value).set_files(bp); await pg.wait_for_timeout(300); await pg.click('[data-bk=doRestore]'); await pg.wait_for_timeout(300)
+    check('ripristino da backup', len(await pg.evaluate('projIndex()')) == 4)
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 

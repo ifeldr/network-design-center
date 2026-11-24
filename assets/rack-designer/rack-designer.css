@@ -585,3 +585,10 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid var(--l
 .kb-s{color:var(--tenue);margin:0 1px}
 .ktab{width:100%;border-collapse:collapse;font-size:13px}.ktab td{padding:4px 2px;vertical-align:middle;border-bottom:1px solid var(--linea)}.ktab td:first-child{white-space:nowrap;padding-right:10px}
 .mlist{max-height:40vh;overflow:auto}
+.s-assente{--c:#fd7e14}
+.mk[data-fs=assente]{--c:#fd7e14}.pt[data-fs=assente]{--c:#fd7e14}
+.fc-new i{background:transparent!important;border:3px dashed #fd7e14!important;box-shadow:none!important}
+.fc-new span{background:#fd7e14!important;color:#fff!important}
+.bk-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pannello);border:1px solid var(--linea2);border-left:4px solid var(--warn);border-radius:.7rem;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:10px 12px;max-width:calc(100vw - 24px);font-size:14px}
+.bk-banner span{margin-right:6px}
+.grid2 .f,.grid3 .f{align-items:stretch}

@@ -7,8 +7,9 @@
    ===================================================================== */
 (function(){
 'use strict';
-const ST={todo:'Da fare',posata:'Posata',cert:'Certificata',attiva:'Attiva',prob:'Problema'};
-const STDEV={todo:'Da fare',posata:'Installato',cert:'Collaudato',attiva:'Attivo',prob:'Problema'};
+const ST={todo:'Da fare',posata:'Posata',cert:'Certificata',attiva:'Attiva',prob:'Problema',assente:'Non trovata'};
+const STDEV={todo:'Da fare',posata:'Installato',cert:'Collaudato',attiva:'Attivo',prob:'Problema',assente:'Non trovato'};
+const NEWK={to:'Presa',ap:'Access point',cam:'Telecamera',altro:'Altro apparato'};
 const PROB=['Cavo corto','Canalina piena','Presa danneggiata','Manca il frutto o la placca','Accesso non possibile','Etichetta mancante','Altro'];
 const AKEY='ndc-campo-autore',TOK='ndc-gh-token',GH='https://api.github.com';
 const DONE=['posata','cert','attiva'];
@@ -26,6 +27,7 @@ function info(k){
     const L=panelLetters(r);const lab=wallLabel(r,it,+n,L);const dev=P.devices.find(d=>d.rack===rId&&d.item===iId&&+d.port===+n);const room=it.ports[n]?.note||'';
     if(dev&&dev.kind!=='to')return {k,kind:dev.kind,title:dev.name||DEV[dev.kind].short,sub:[lab,room].filter(Boolean).join(' · '),dev,r,it,n:+n};
     return {k,kind:'to',title:lab,sub:room||(dev?.name||''),dev,r,it,n:+n}}
+  if(k.startsWith('n:')){const n=P.fieldNew?.[k];if(!n)return null;return {k,kind:n.kind||'to',title:T('In più')+': '+T(NEWK[n.kind||'to']),sub:n.note||'',isNew:true,n}}
   const d=P.devices.find(x=>x.id===k.slice(2));if(!d)return null;
   return {k,kind:d.kind,title:d.name||DEV[d.kind].short,sub:'non collegato a una presa',dev:d};
 }
@@ -37,6 +39,10 @@ function applyEntry(e){
   if(e.note!=null&&(!f.nt||e.t>=f.nt)){f.note=e.note;f.nt=e.t}
   if(e.h!=null&&(!f.ht||e.t>=f.ht)){f.h=e.h;f.ht=e.t}
   if(e.ph){(f.photos??=[]);if(!f.photos.includes(e.ph))f.photos.push(e.ph)}
+  if(e.add){P.fieldNew??={};P.fieldNew[e.k]={...(P.fieldNew[e.k]||{}),...e.add,t:e.t,a:e.a}}
+  if(e.kind&&P.fieldNew?.[e.k])P.fieldNew[e.k].kind=e.kind;
+  if(e.del&&P.fieldNew?.[e.k])P.fieldNew[e.k].del=true;
+  if(e.k.startsWith('n:')&&P.fieldNew?.[e.k]&&e.note!=null)P.fieldNew[e.k].note=e.note;
   if(e.mv&&(!f.mt||e.t>=f.mt)){const d=P.devices.find(x=>x.id===e.mv.d);if(d){d.x=Math.round(e.mv.x);d.y=Math.round(e.mv.y);f.mt=e.t}}
   f.last=Math.max(f.last||0,e.t);
 }
@@ -47,8 +53,8 @@ function addEntry(k,ch,quiet){
 function planTargets(pl){const seen=new Set();const out=[];P.devices.filter(d=>d.plan===pl.id).forEach(d=>{const k=keyOfDev(d);if(seen.has(k))return;seen.add(k);out.push({k,d})});return out}
 function rackTargets(r){const out=[];const L=panelLetters(r);[...r.items].filter(i=>i.kind==='patch').sort((a,b)=>b.pos-a.pos).forEach(it=>{for(let n=1;n<=+it.props.ports;n++){const pd=it.ports[n];if(pd&&pd.t==='link')continue;const k=`p:${r.id}:${it.id}:${n}`;
   if(pd?.note||devAtPort(r.id,it.id,n)||P.field?.[k])out.push({k,lab:L[it.id]+n,it,n})}});return out}
-function counts(keys){const c={todo:0,posata:0,cert:0,attiva:0,prob:0};keys.forEach(k=>c[stOf(k)]++);c.tot=keys.length;c.done=c.posata+c.cert+c.attiva;return c}
-const bar=c=>`<div class="fc-bar">${['attiva','cert','posata','prob'].map(s=>c[s]?`<i class="s-${s}" style="width:${c[s]/c.tot*100}%"></i>`:'').join('')}</div>`;
+function counts(keys){const c={todo:0,posata:0,cert:0,attiva:0,prob:0,assente:0};keys.forEach(k=>c[stOf(k)]++);c.tot=keys.length;c.done=c.posata+c.cert+c.attiva;return c}
+const bar=c=>`<div class="fc-bar">${['attiva','cert','posata','prob','assente'].map(s=>c[s]?`<i class="s-${s}" style="width:${c[s]/c.tot*100}%"></i>`:'').join('')}</div>`;
 const cTxt=c=>`${c.done}/${c.tot} fatte${c.cert?` · ${c.cert} certificate`:''}${c.prob?` · <b class="t-prob">${c.prob} problemi</b>`:''}`;
 
 /* ---------------- foto ---------------- */
@@ -89,10 +95,11 @@ function drawField(){
     </div>`;
   }else if(FS.scr==='plan'){
     const pl=planById(FS.plan);if(!pl){FS.scr='home';return drawField()}
-    body=`<div class="fc-top"><button class="fc-back" data-fc="home">${ICB}</button><b class="grow">${esc(pl.name)}</b>${FS.moving?'<span class="fc-mv">Tocca la nuova posizione</span><button class="fc-x" data-fc="mvEnd">Annulla</button>':''}</div>
+    body=`<div class="fc-top"><button class="fc-back" data-fc="home">${ICB}</button><b class="grow">${esc(pl.name)}</b>${FS.moving||FS.adding?`<span class="fc-mv">${FS.adding?'Tocca dove si trova':'Tocca la nuova posizione'}</span><button class="fc-x" data-fc="mvEnd">Annulla</button>`:'<button class="fc-x" data-fc="add">+ In più</button>'}</div>
     <div class="fc-vp" id="fcVp"><div class="fc-in" id="fcIn" style="width:${pl.w}px;height:${pl.h}px"><img id="fcImg" alt="" draggable="false">
       ${P.racks.filter(r=>r.loc&&r.loc.plan===pl.id).map(r=>`<div class="fc-mk fc-rk" data-fr="${r.id}" style="left:${r.loc.x}px;top:${r.loc.y}px">${esc(rid(r,true))}</div>`).join('')}
       ${planTargets(pl).map(({k,d})=>{const i=info(k);const lb=devLabel(d);return `<div class="fc-mk fc-d k-${d.kind} s-${stOf(k)} ${FS.sel===k?'sel':''}" data-fk="${k}" style="left:${d.x}px;top:${d.y}px"><i></i>${lb||d.name?`<span>${esc(d.kind==='to'?(lb?lb.split('.').pop():d.name):(d.name||lb.split('.').pop()))}</span>`:''}</div>`}).join('')}
+      ${Object.entries(P.fieldNew||{}).filter(([,n])=>n.plan===pl.id&&!n.del&&!n.done).map(([k,n])=>`<div class="fc-mk fc-d fc-new k-${n.kind||'to'} ${FS.sel===k?'sel':''}" data-fk="${k}" style="left:${n.x}px;top:${n.y}px"><i></i><span>+</span></div>`).join('')}
     </div></div>
     <div class="fc-leg">${Object.keys(ST).map(s=>`<span><i class="s-${s}"></i>${ST[s]}</span>`).join('')}</div>`;
   }else if(FS.scr==='rack'){
@@ -110,11 +117,12 @@ function sheetHtml(){
   const k=FS.sel;const i=info(k);if(!i)return '';const f=P.field?.[k]||{};const st=f.st||'todo';const L=i.kind!=='to'?STDEV:ST;
   const hist=(P.fieldlog||[]).filter(e=>e.k===k).slice(-6).reverse();
   return `<div class="fc-sheet" id="fcSheet"><div class="fc-sh-h"><span class="grow"><b>${esc(i.title)}</b><small>${esc(i.sub||'')}</small></span><button class="fc-x" data-fc="shClose">✕</button></div>
-    <div class="fc-st">${Object.keys(L).filter(s=>s!=='todo').map(s=>`<button class="s-${s} ${st===s?'on':''}" data-fst="${s}">${L[s]}</button>`).join('')}${st!=='todo'?'<button class="s-todo" data-fst="todo">Da fare</button>':''}</div>
+    ${i.isNew?'':`<div class="fc-st">`}${i.isNew?'':Object.keys(L).filter(s=>s!=='todo').map(s=>`<button class="s-${s} ${st===s?'on':''}" data-fst="${s}">${L[s]}</button>`).join('')}${i.isNew?'':st!=='todo'?'<button class="s-todo" data-fst="todo">Da fare</button>':''}${i.isNew?'':'</div>'}
     ${st==='prob'?`<div class="fc-chips">${PROB.map(p=>`<button class="${f.prob===p?'on':''}" data-fpr="${esc(p)}">${p}</button>`).join('')}</div>`:''}
+    ${i.isNew?`<div class="fc-chips">${Object.entries(NEWK).map(([kk,t])=>`<button class="${(i.n.kind||'to')===kk?'on':''}" data-fkind="${kk}">${t}</button>`).join('')}</div>`:''}
     <label class="fc-f"><span>Nota</span><textarea id="fcNote" rows="2" placeholder="es. presa dietro l'armadio, cavo lasciato a 3 m">${esc(f.note||'')}</textarea></label>
     ${['ap','cam'].includes(i.kind)?`<label class="fc-f fc-inl"><span>Altezza di montaggio</span><input type="number" step="0.1" min="0" id="fcH" value="${f.h??''}" placeholder="m"></label>`:''}
-    <div class="fc-btns"><label class="fc-btn pri"><input type="file" accept="image/*" capture="environment" multiple hidden id="fcPh">Scatta foto</label>${i.dev&&i.dev.plan&&FS.scr==='plan'?'<button class="fc-btn" data-fc="mv">Sposta sulla pianta</button>':''}</div>
+    <div class="fc-btns"><label class="fc-btn pri"><input type="file" accept="image/*" capture="environment" multiple hidden id="fcPh">Scatta foto</label>${i.dev&&i.dev.plan&&FS.scr==='plan'?'<button class="fc-btn" data-fc="mv">Sposta sulla pianta</button>':''}${i.isNew?'<button class="fc-btn" data-fc="newDel">Elimina</button>':''}</div>
     ${thumbs(f.photos)}
     ${hist.length?`<div class="fc-hist">${hist.map(e=>`<div><span>${dt(e.t)}${e.a?' · '+esc(e.a):''}</span> ${e.st?esc(stLabel(k,e.st)):e.ph?'foto':e.note!=null?'nota':e.mv?'spostato':e.h!=null?'altezza '+esc(e.h)+' m':e.prob?esc(e.prob):''}</div>`).join('')}</div>`:''}
   </div>`;
@@ -136,7 +144,8 @@ function setupPlan(){
       const k=Math.max(.05,Math.min(8,g.z.k*d1/d0));const ix=(m0.x-g.z.x)/g.z.k,iy=(m0.y-g.z.y)/g.z.k;z.k=k;z.x=m1.x-ix*k;z.y=m1.y-iy*k;apply()}};
   const up=e=>{if(!P0.has(e.pointerId))return;P0.delete(e.pointerId);const was=g;if(P0.size){snap();g.moved=true;return}g=null;if(!was||was.moved)return;
     const mk=was.t.closest&&was.t.closest('[data-fk],[data-fr]');
-    if(FS.moving){const rr=vp.getBoundingClientRect();const x=(e.clientX-rr.left-z.x)/z.k,y=(e.clientY-rr.top-z.y)/z.k;if(x>=0&&y>=0&&x<=pl.w&&y<=pl.h){const mv=FS.moving;FS.moving=null;addEntry(mv.k,{mv:{d:mv.d,x,y}});toast('Posizione aggiornata')}return}
+    if(FS.moving){const rr=vp.getBoundingClientRect();const x=(e.clientX-rr.left-z.x)/z.k,y=(e.clientY-rr.top-z.y)/z.k;if(x>=0&&y>=0&&x<=pl.w&&y<=pl.h){const mv=FS.moving;FS.moving=null;const d0=P.devices.find(q=>q.id===mv.d);addEntry(mv.k,{mv:{d:mv.d,x,y,fx:d0?.x,fy:d0?.y}});toast('Posizione aggiornata')}return}
+    if(FS.adding){const rr=vp.getBoundingClientRect();const x=(e.clientX-rr.left-z.x)/z.k,y=(e.clientY-rr.top-z.y)/z.k;if(x>=0&&y>=0&&x<=pl.w&&y<=pl.h){FS.adding=false;const k='n:'+uid();addEntry(k,{add:{plan:pl.id,x:Math.round(x),y:Math.round(y),kind:'to',note:''}},true);FS.sel=k;drawField()}return}
     if(mk?.dataset.fk){FS.sel=mk.dataset.fk;drawField()}else if(mk?.dataset.fr){FS.scr='rack';FS.rack=mk.dataset.fr;FS.sel=null;drawField()}else if(FS.sel){FS.sel=null;drawField()}};
   vp.onpointerup=up;vp.onpointercancel=up;
   vp.onwheel=e=>{e.preventDefault();const rr=vp.getBoundingClientRect();const mx=e.clientX-rr.left,my=e.clientY-rr.top;const k=Math.max(.05,Math.min(8,z.k*(e.deltaY<0?1.15:1/1.15)));const ix=(mx-z.x)/z.k,iy=(my-z.y)/z.k;z.k=k;z.x=mx-ix*k;z.y=my-iy*k;apply()};
@@ -185,11 +194,12 @@ function bindField(el){
     const b=e.target.closest('[data-fc]');const st=e.target.closest('[data-fst]');const pr=e.target.closest('[data-fpr]');const fp=e.target.closest('[data-fk]');const ph=e.target.closest('[data-fph]');
     if(st&&FS.sel){const s=st.dataset.fst;addEntry(FS.sel,{st:s});return}
     if(pr&&FS.sel){addEntry(FS.sel,{prob:pr.dataset.fpr});return}
+    const kd=e.target.closest('[data-fkind]');if(kd&&FS.sel){addEntry(FS.sel,{kind:kd.dataset.fkind});return}
     if(ph){imgUrl(ph.dataset.fph).then(u=>{if(u)window.open(u,'_blank')});return}
     if(fp&&FS.scr==='rack'){FS.sel=fp.dataset.fk;drawField();return}
     if(!b)return;const a=b.dataset.fc;
     ({close:closeField,home:()=>{FS.scr='home';FS.sel=null;FS.moving=null;drawField()},plan:()=>{FS.scr='plan';FS.plan=b.dataset.id;FS.sel=null;drawField()},rack:()=>{FS.scr='rack';FS.rack=b.dataset.id;FS.sel=null;drawField()},
-      shClose:()=>{FS.sel=null;drawField()},mv:()=>{const i=info(FS.sel);if(!i?.dev)return;FS.moving={k:FS.sel,d:i.dev.id};FS.sel=null;drawField()},mvEnd:()=>{FS.moving=null;drawField()},
+      shClose:()=>{FS.sel=null;drawField()},mv:()=>{const i=info(FS.sel);if(!i?.dev)return;FS.moving={k:FS.sel,d:i.dev.id};FS.sel=null;drawField()},mvEnd:()=>{FS.moving=null;FS.adding=false;drawField()},add:()=>{FS.adding=true;FS.sel=null;drawField()},newDel:()=>{if(confirm(T('Eliminare questo elemento trovato in più?'))){const k=FS.sel;FS.sel=null;addEntry(k,{del:true})}},
       scan:scanQR,scanEnd:()=>SCAN&&SCAN.stop(),pack:sendFile,gist:sendGist})[a]?.();
   });
   el.addEventListener('change',e=>{
@@ -205,9 +215,9 @@ function bindField(el){
 let PK=null;
 function analyze(p){
   const have=new Set((P.fieldlog||[]).map(e=>e.id));const nw=(p.entries||[]).filter(e=>e&&e.id&&e.k&&!have.has(e.id));
-  const ok=nw.filter(e=>info(e.k));const unk=nw.length-ok.length;const keys=new Set(ok.map(e=>e.k));
-  const conf=[];ok.filter(e=>e.st).forEach(e=>{const f=P.field?.[e.k];if(f?.t&&f.t>e.t&&f.st!==e.st)conf.push(e)});
-  return {nw,ok,unk,keys,conf,st:ok.filter(e=>e.st).length,ph:ok.filter(e=>e.ph).length,notes:ok.filter(e=>e.note!=null).length,mv:ok.filter(e=>e.mv).length};
+  const ok=nw.filter(e=>e.k.startsWith('n:')||info(e.k));const unk=nw.length-ok.length;const keys=new Set(ok.map(e=>e.k));
+  const conf=[];ok.filter(e=>e.st&&!e.k.startsWith('n:')).forEach(e=>{const f=P.field?.[e.k];if(f?.t&&f.t>e.t&&f.st!==e.st)conf.push(e)});
+  return {nw,ok,unk,keys,conf,st:ok.filter(e=>e.st).length,ph:ok.filter(e=>e.ph).length,notes:ok.filter(e=>e.note!=null).length,mv:ok.filter(e=>e.mv).length,add:ok.filter(e=>e.add).length};
 }
 function openImportField(){
   const has=!!localStorage.getItem(TOK);
@@ -219,7 +229,7 @@ async function loadPack(p){
   if(!p||p.kind!=='ndc-sopralluogo'){toast('Questo file non è un sopralluogo di Network Design Center');return}
   PK=p;const a=analyze(p);
   $('#fiOut').innerHTML=`${p.pid&&p.pid!==P.pid?`<div class="esito warn">Il sopralluogo è stato fatto sul progetto «${esc(p.name)}»: verranno applicate solo le voci che corrispondono a prese e apparati di questo progetto.</div>`:''}
-    <div class="esito ${a.ok.length?'ok':'warn'}">${a.ok.length?`${a.ok.length} aggiornamenti nuovi su ${a.keys.size} prese e apparati: ${a.st} cambi di stato, ${a.notes} note, ${a.ph} foto, ${a.mv} spostamenti.`:'Nessun aggiornamento nuovo: questo sopralluogo è già stato importato.'}
+    <div class="esito ${a.ok.length?'ok':'warn'}">${a.ok.length?`${a.ok.length} aggiornamenti nuovi su ${a.keys.size} prese e apparati: ${a.st} cambi di stato, ${a.notes} note, ${a.ph} foto, ${a.mv} spostamenti, ${a.add} trovati in più.`:'Nessun aggiornamento nuovo: questo sopralluogo è già stato importato.'}
     ${p.a?`<br><small>Autore: ${esc(p.a)} · inviato il ${esc(new Date(p.t).toLocaleString(loc()))}</small>`:''}</div>
     ${a.unk?`<div class="esito warn">${a.unk} voci riguardano prese o apparati che non esistono più e verranno ignorate.</div>`:''}
     ${a.conf.length?`<div class="esito warn">${a.conf.length} prese hanno sul PC uno stato più recente di quello del sopralluogo: resta quello del PC.<br><small>${a.conf.slice(0,8).map(e=>esc(info(e.k)?.title||'')).join(', ')}${a.conf.length>8?'…':''}</small></div>`:''}
@@ -229,7 +239,7 @@ async function applyPack(){
   const p=PK;if(!p)return;const a=analyze(p);
   for(const e of a.ok)if(e.ph&&p.photos?.[e.ph]&&!(await DB.get(e.ph))){const b=await dataToBlob(p.photos[e.ph]);await DB.put(e.ph,b)}
   mutate(()=>{P.fieldlog??=[];[...a.ok].sort((x,y)=>x.t-y.t).forEach(e=>{P.fieldlog.push(e);applyEntry(e)})});
-  closeModal();toast(`${a.ok.length} aggiornamenti del sopralluogo applicati`);PK=null;
+  closeModal();toast(`${a.ok.length} aggiornamenti del sopralluogo applicati`);PK=null;{const d=realDiff();if(d.moved.length+d.missing.length+d.extra.length)setTimeout(openReal,300)}
 }
 async function gistList(){
   $('#fiOut').innerHTML='<p class="piccola">Caricamento…</p>';
@@ -286,15 +296,56 @@ function reportHtml(){
   P.racks.forEach(r=>rackTargets(r).forEach(x=>all.add(x.k)));
   const tot=counts([...all]);
   const probs=[...all].filter(k=>stOf(k)==='prob').map(k=>[info(k),P.field[k]]);
-  return `<h1>Avanzamento lavori</h1><div>${tot.tot} prese e apparati · ${tot.posata} posati · ${tot.cert} certificati · ${tot.attiva} attivi · ${tot.prob} con problemi · ${tot.todo} da fare</div>
+  return `<h1>Avanzamento lavori</h1><div>${tot.tot} prese e apparati · ${tot.posata} posati · ${tot.cert} certificati · ${tot.attiva} attivi · ${tot.prob} con problemi${tot.assente?` · ${tot.assente} non trovati`:''} · ${tot.todo} da fare</div>
     <h2>Per planimetria</h2><table><tr><th>Planimetria</th><th>Totale</th><th>Posate / installate</th><th>Certificate / collaudate</th><th>Attive</th><th>Problemi</th><th>Da fare</th></tr>${rows.map(([n,c])=>`<tr><td>${esc(n)}</td><td>${c.tot}</td><td>${c.posata}</td><td>${c.cert}</td><td>${c.attiva}</td><td>${c.prob}</td><td>${c.todo}</td></tr>`).join('')}</table>
     ${probs.length?`<h2>Problemi aperti</h2><table><tr><th>Presa / apparato</th><th>Problema</th><th>Nota</th><th>Segnalato</th></tr>${probs.map(([i,f])=>`<tr><td>${esc(i?.title||'')}${i?.sub?`<br><small>${esc(i.sub)}</small>`:''}</td><td>${esc(f.prob||'')}</td><td>${esc(f.note||'')}</td><td>${f.t?dt(f.t):''}${f.a?' · '+esc(f.a):''}</td></tr>`).join('')}</table>`:''}
+    ${(()=>{const d=realDiff();return d.moved.length+d.missing.length+d.extra.length?`<h2>Differenze tra progetto e realtà</h2><table><tr><th>Spostati in cantiere</th><th>Non trovati</th><th>Trovati in più</th><th>Non ancora verificati</th></tr><tr><td>${d.moved.length}</td><td>${d.missing.length}</td><td>${d.extra.length}</td><td>${d.todo.length}</td></tr></table>`:''})()}
     ${(P.fieldlog||[]).length?`<h2>Ultimi aggiornamenti</h2><table><tr><th>Quando</th><th>Chi</th><th>Presa / apparato</th><th>Aggiornamento</th></tr>${[...P.fieldlog].sort((a,b)=>b.t-a.t).slice(0,60).map(e=>`<tr><td>${dt(e.t)}</td><td>${esc(e.a||'')}</td><td>${esc(info(e.k)?.title||'')}</td><td>${e.st?esc(stLabel(e.k,e.st)):e.ph?'foto':e.note!=null?'nota: '+esc(e.note):e.mv?'spostato':e.h!=null?'altezza '+esc(e.h)+' m':e.prob?esc(e.prob):''}</td></tr>`).join('')}</table>`:''}`;
 }
 
+
+/* =====================================================================
+   confronto tra progetto e realtà
+   ===================================================================== */
+function realDiff(){
+  const dec=P.fieldDec||{};const out={moved:[],missing:[],extra:[],probs:[],todo:[]};
+  const lastMv={};(P.fieldlog||[]).forEach(e=>{if(e.mv){const p=lastMv[e.mv.d];if(!p||e.t>=p.t)lastMv[e.mv.d]={...e,first:p?.first||e}}});
+  Object.values(lastMv).forEach(e=>{const d=P.devices.find(x=>x.id===e.mv.d);if(!d||dec['mv:'+e.id])return;const f=e.first.mv;const fx=f.fx??null,fy=f.fy??null;if(fx==null)return;
+    const px=Math.hypot(d.x-fx,d.y-fy);if(px<3)return;const pl=planById(d.plan);out.moved.push({e,d,fx,fy,px,m:pl?.scale?px*pl.scale:null,k:keyOfDev(d)})});
+  Object.entries(P.field||{}).forEach(([k,f])=>{if(k.startsWith('n:'))return;const i=info(k);if(!i)return;
+    if(f.st==='assente'&&!dec['ab:'+k])out.missing.push({k,i,f});if(f.st==='prob')out.probs.push({k,i,f})});
+  Object.entries(P.fieldNew||{}).forEach(([k,n])=>{if(!n.del&&!n.done)out.extra.push({k,n})});
+  const seen=new Set();P.plans.forEach(pl=>planTargets(pl).forEach(({k})=>{if(!seen.has(k)){seen.add(k);if(stOf(k)==='todo'){const i=info(k);if(i)out.todo.push({k,i,pl})}}}));
+  return out;
+}
+function openReal(){
+  const d=realDiff();const tot=d.moved.length+d.missing.length+d.extra.length;
+  const opt=(name,vals,def)=>`<select data-rd="${name}">${vals.map(([v,t])=>`<option value="${v}" ${v===def?'selected':''}>${t}</option>`).join('')}</select>`;
+  modal('Confronto progetto ↔ realtà',`${!(P.fieldlog||[]).length?'<div class="esito warn">Non ci sono ancora dati di sopralluogo: importa un sopralluogo dal telefono (menu ⋯ → «Importa sopralluogo…»).</div>':''}
+  <p class="piccola">Differenze rilevate in cantiere rispetto al progetto. Per ognuna scegli se aggiornare il progetto; le scelte si applicano insieme e si possono annullare con ${window.NDC_keys?.MAC?'⌘Z':'Ctrl+Z'}.</p>
+  <div class="sez"><h3>Spostati in cantiere <span>${d.moved.length}</span></h3>${d.moved.length?`<table class="vtab">${d.moved.map(x=>`<tr><td><b>${esc(info(x.k)?.title||x.d.name||'')}</b><br><small>${esc(planById(x.d.plan)?.name||'')} · spostato di ${x.m!=null?fmt(x.m,1)+' m':Math.round(x.px)+' px'}${x.e.a?' · '+esc(x.e.a):''}</small></td><td>${opt('mv:'+x.e.id,[['keep','tieni la posizione rilevata'],['revert','ripristina quella del progetto']],'keep')}</td></tr>`).join('')}</table>`:'<p class="piccola">Nessuno.</p>'}</div>
+  <div class="sez"><h3>Non trovati in cantiere <span>${d.missing.length}</span></h3>${d.missing.length?`<table class="vtab">${d.missing.map(x=>`<tr><td><b>${esc(x.i.title)}</b><br><small>${esc(x.i.sub||'')}${x.f.note?' · '+esc(x.f.note):''}${x.f.a?' · '+esc(x.f.a):''}</small></td><td>${opt('ab:'+x.k,[['keep','lascia nel progetto'],['delete','togli dal progetto']],'keep')}</td></tr>`).join('')}</table>`:'<p class="piccola">Nessuno.</p>'}</div>
+  <div class="sez"><h3>Trovati in più <span>${d.extra.length}</span></h3>${d.extra.length?`<table class="vtab">${d.extra.map(x=>`<tr><td><b>${esc(T(NEWK[x.n.kind||'to']))}</b><br><small>${esc(planById(x.n.plan)?.name||'')}${x.n.note?' · '+esc(x.n.note):''}${x.n.a?' · '+esc(x.n.a):''}</small></td><td>${opt('nw:'+x.k,[['add','aggiungi al progetto'],['ignore','ignora']],'add')}</td></tr>`).join('')}</table>`:'<p class="piccola">Nessuno.</p>'}</div>
+  <div class="sez"><h3>Problemi aperti <span>${d.probs.length}</span></h3>${d.probs.length?d.probs.map(x=>`<div class="kv"><span>${esc(x.i.title)}</span><b style="color:var(--err)">${esc(x.f.prob||'')}${x.f.note?' · '+esc(x.f.note):''}</b></div>`).join(''):'<p class="piccola">Nessuno.</p>'}</div>
+  <div class="sez"><h3>Non ancora verificati <span>${d.todo.length}</span></h3>${d.todo.length?`<details><summary class="piccola">Mostra l'elenco</summary>${d.todo.map(x=>`<div class="kv"><span>${esc(x.pl.name)}</span><b>${esc(x.i.title)}</b></div>`).join('')}</details>`:'<p class="piccola">Tutto verificato. ✓</p>'}</div>
+  ${tot?'<div class="btnrow" style="justify-content:flex-end"><button class="btn" data-close>Chiudi</button><button class="btn primario" data-fr2="apply">Applica le scelte</button></div>':''}`);
+}
+function applyReal(){
+  const ch=$$('[data-rd]').map(s=>[s.dataset.rd,s.value]);const d=realDiff();let a=0,del=0,rv=0;
+  mutate(()=>{P.fieldDec??={};
+    ch.forEach(([key,v])=>{
+      if(key.startsWith('mv:')){const x=d.moved.find(m=>'mv:'+m.e.id===key);if(!x)return;if(v==='revert'){x.d.x=x.fx;x.d.y=x.fy;rv++}P.fieldDec[key]=v}
+      else if(key.startsWith('ab:')){const k=key.slice(3);if(v==='delete'){const i=info(k);if(i?.dev)P.devices=P.devices.filter(q=>q!==i.dev);if(i?.it&&i.it.ports[i.n]&&i.it.ports[i.n].t!=='link')delete i.it.ports[i.n];del++;P.fieldDec[key]='delete'}}
+      else if(key.startsWith('nw:')){const k=key.slice(3);const n=P.fieldNew[k];if(!n)return;if(v==='add'){const pl=planById(n.plan);if(!pl)return;const dv={id:uid(),kind:n.kind||'to',plan:pl.id,x:n.x,y:n.y,name:n.note||'',rack:null,item:null,port:null,model:null};
+          const r=nearestRack(pl,dv.x,dv.y);const f=r&&freePorts(r)[0];if(f){dv.rack=r.id;dv.item=f.it.id;dv.port=f.n;if(n.note&&dv.kind==='to'){f.it.ports[f.n]={...(f.it.ports[f.n]||{t:'user'}),note:n.note}}}
+          P.devices.push(dv);const nk=keyOfDev(dv);const src=P.field?.[k];if(src){P.field[nk]={...src,st:src.st||'posata'}}else{P.field??={};P.field[nk]={st:'posata',t:n.t,a:n.a}}n.done='added';a++}else n.done='ignored'}});
+  });
+  closeModal();toast(`Progetto aggiornato: ${a} aggiunti, ${del} tolti, ${rv} posizioni ripristinate`);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-fr2]');if(b&&b.dataset.fr2==='apply')applyReal()});
 /* ---------------- menu e avvio ---------------- */
-$('#moreMenu .menu-lista').addEventListener('click',e=>{const m=e.target.closest('[data-m]')?.dataset.m;({campo:()=>innerWidth<820?openField():openFieldInfo(),campoImp:openImportField})[m]?.()});
-window.NDC_field={openField,closeField,openFieldInfo,openImportField,addEntry,applyEntry,info,keyOfDev,counts,planTargets,rackTargets,pack,loadPack,applyPack,reportHtml,stOf};
+$('#moreMenu .menu-lista').addEventListener('click',e=>{const m=e.target.closest('[data-m]')?.dataset.m;({campo:()=>innerWidth<820?openField():openFieldInfo(),campoImp:openImportField,real:openReal})[m]?.()});
+window.NDC_field={realDiff,openReal,applyReal,openField,closeField,openFieldInfo,openImportField,addEntry,applyEntry,info,keyOfDev,counts,planTargets,rackTargets,pack,loadPack,applyPack,reportHtml,stOf};
 (function go(){if(!P){setTimeout(go,30);return}
   if(new URLSearchParams(location.search).get('campo')==='1'){openField();try{history.replaceState(null,'',location.pathname+location.hash)}catch(_){}}})();
 })();

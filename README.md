@@ -28,6 +28,7 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Network D
 | `assets/rack-designer/rack-designer-field.js` | modalità sopralluogo da telefono, importazione del sopralluogo sul PC |
 | `assets/rack-designer/vendor/jsQR.min.js` | jsQR 1.4 (Apache 2.0) per leggere i QR sugli iPhone, caricato solo quando serve |
 | `assets/rack-designer/rack-designer-select.js` | selezione multipla e scorciatoie da tastiera (Ctrl su Windows e Linux, ⌘ su macOS) |
+| `assets/rack-designer/rack-designer-clip.js` | copia e incolla, backup automatico e ripristino |
 | `tests/run_tests.py`, `.github/workflows/test.yml` | test automatici (Playwright) eseguiti da GitHub Actions a ogni push |
 | `assets/rack-designer/i18n.js` | traduzione in inglese (dizionario e traduzione dell'interfaccia, dei dialoghi, delle stampe e dei file esportati) |
 | `manifest.webmanifest`, `sw.js` | installazione come app e funzionamento offline |
@@ -89,6 +90,20 @@ nella versione inglese. Lo stesso test gira su GitHub Actions a ogni push (sched
 Sul PC lo stato compare come anello colorato sugli elementi in pianta e sulle porte del patch panel, con una
 sezione «Sopralluogo» nelle proprietà; la relazione completa ha la sezione «Avanzamento lavori» e le versioni
 registrano i cambi di stato.
+
+## Copia e incolla, backup, confronto con la realtà
+
+- **Copia e incolla**: Ctrl+C / Ctrl+X / Ctrl+V (⌘ su Mac) su elementi dell'armadio, armadi interi (selezionati
+  nell'elenco con Ctrl/⌘+clic) e apparati in pianta. Funziona tra armadi, progetti, schede e finestre: gli
+  elementi incollati restano nelle stesse U se libere, gli apparati prendono la prima presa libera dell'armadio
+  più vicino, gli armadi interi mantengono permutazioni e configurazioni degli switch.
+- **Backup dei progetti** (menu ⋯): un file con tutti i progetti, i tuoi modelli e i modelli di armadio, oppure
+  un gist segreto aggiornato da solo quando ci sono modifiche (anche alla chiusura della scheda). Promemoria se
+  l'ultimo backup è vecchio; ripristino come copie o sostituendo i progetti esistenti.
+- **Confronto progetto ↔ realtà** (menu ⋯, si apre anche dopo l'importazione di un sopralluogo): apparati
+  spostati in cantiere (tieni la nuova posizione o ripristina quella del progetto), prese e apparati non trovati
+  (stato «Non trovata» dal telefono: lascia o togli), elementi trovati in più (pulsante «+ In più» sul telefono:
+  aggiungi o ignora), problemi aperti e ciò che non è ancora stato verificato.
 
 ## Lingua / Language
 
@@ -190,6 +205,7 @@ Per aggiungere o correggere una traduzione basta modificare il dizionario `D` in
 | Maiusc/⇧ + trascina | selezione con un rettangolo |
 | Ctrl/⌘ + A | seleziona tutto l'armadio o tutta la pianta |
 | Canc, Backspace (⌫, ⌘⌫ su Mac) | elimina la selezione (in pianta: toglie dalla pianta) |
+| Ctrl/⌘ + C, X, V | copia, taglia e incolla (anche tra progetti, schede e finestre) |
 | Ctrl/⌘ + D | duplica la selezione |
 | Frecce | sposta la selezione: 1 U nell'armadio, 1 px in pianta (Maiusc/⇧: 10 px) |
 | Ctrl+K oppure / | ricerca globale (identificativi, prese, locali, modelli, seriali, MAC, IP) |

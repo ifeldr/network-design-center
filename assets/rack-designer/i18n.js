@@ -1151,7 +1151,26 @@ const D={
 "router 5 porte PoE": "5-port PoE router",
 "switch 5 porte + SFP da scrivania": "5-port + SFP desktop switch",
 "switch 8 porte + 2× SFP+ da tavolo": "8-port + 2× SFP+ desktop switch",
-"switch 5× SFP da tavolo": "desktop 5× SFP switch"
+"switch 5× SFP da tavolo": "desktop 5× SFP switch",
+"gateway, 2 porte combo SFP": "gateway, 2 SFP combo ports",
+"router, 2 porte combo SFP": "router, 2 SFP combo ports",
+"router 8 porte": "8-port router",
+"Wi-Fi 4 lunga portata": "Wi-Fi 4 long range",
+"Wi-Fi 5 alta densità": "Wi-Fi 5 high density",
+"Wi-Fi 5 mesh esterno": "Wi-Fi 5 outdoor mesh",
+"Wi-Fi 5 a parete": "Wi-Fi 5 wall-plate",
+"videocitofono Wi-Fi": "Wi-Fi video doorbell",
+"gateway 3 porte": "3-port gateway",
+"controller UniFi con disco": "UniFi controller with drive",
+"NVR da tavolo, 1 disco": "desktop NVR, 1 drive",
+"router 3 porte + SFP": "3-port router + SFP",
+"router 3 porte": "3-port router",
+"router 10 porte + 2 SFP": "10-port router + 2 SFP",
+"switch 8 porte da tavolo": "8-port desktop switch",
+"switch 8 porte PoE + 2 SFP": "8-port PoE switch + 2 SFP",
+"switch 10G 4 porte PoE + 2 SFP+": "10G switch, 4 PoE ports + 2 SFP+",
+"switch 10G 5 porte da tavolo": "5-port 10G desktop switch",
+"switch 8 porte + 2 SFP da tavolo": "8-port + 2 SFP desktop switch"
 };
 /* lower/upper-case variants */
 for(const k of Object.keys(D)){const v=D[k];const c=k.charAt(0);

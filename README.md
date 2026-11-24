@@ -34,13 +34,13 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Rack Desi
   prese a muro (`BA.FA1.C12`), tratte tra armadi (`ABC.DEF.G`) con marcatura del lato remoto.
 - Foglio di armadio stampabile, topologia CD → BD → FD → LD.
 
-**Catalogo modelli** (scheda *Modelli*, filtro per marca e ricerca) — 601 modelli di 30 marche
+**Catalogo modelli** (scheda *Modelli*, filtro per marca e ricerca) — 610 modelli di 31 marche
 - Rete: Ubiquiti, MikroTik, HP/HPE, Aruba, Cisco, ZTE, Ruckus, TP-Link Omada, Netgear, Zyxel, D-Link,
   Juniper/Mist, Extreme Networks.
 - Firewall: Fortinet, Sophos, WatchGuard, Palo Alto Networks (oltre a quelli delle marche di rete).
 - Server e storage: Dell PowerEdge/PowerVault, HPE ProLiant, Lenovo ThinkSystem, Fujitsu PRIMERGY,
   Supermicro, Cisco UCS; NAS Synology e QNAP; NVR Hikvision.
-- Alimentazione: UPS e PDU APC ed Eaton.
+- Alimentazione: UPS e PDU APC ed Eaton, UPS rack/tower Powertronix (Antares Pro, Vector RI).
 - Cablaggio: patch panel, cassetti ottici e passacavi Panduit, CommScope, Legrand, Schneider Electric.
 - In campo (planimetria): access point, telecamere Hikvision/Synology/UniFi/Meraki, NAS e NVR da tavolo, ONT.
 - Ogni modello a rack ha altezza in U (gli apparati da 1,5 U occupano 2 U), porte RJ45/SFP e PoE dove

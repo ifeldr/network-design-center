@@ -93,7 +93,8 @@ const VENDORS={
   panduit:{n:'Panduit',logo:'PANDUIT',c:'#3a3a3a'},
   commscope:{n:'CommScope',logo:'CommScope',c:'#ff6a13'},
   legrand:{n:'Legrand',logo:'legrand',c:'#4d4d4f'},
-  schneider:{n:'Schneider Electric',logo:'Schneider',c:'#3dcd58'}
+  schneider:{n:'Schneider Electric',logo:'Schneider',c:'#3dcd58'},
+  powertronix:{n:'Powertronix',logo:'POWERTRONIX',c:'#e30613',bc:'#ff4d4d'}
 };
 const RACK_MODELS=[
   // Ubiquiti
@@ -519,7 +520,16 @@ const RACK_MODELS=[
   ['schneider','Actassi patch panel 24 porte Cat 6A','patch',1,24,0,false,''],
   ['schneider','Actassi patch panel 24 porte Cat 6','patch',1,24,0,false,''],
   ['schneider','Actassi cassetto fibra 1U','fo',1,24,0,false,'LC'],
-  ['schneider','Actassi passacavi 1U','cm',1,0,0,false,'']
+  ['schneider','Actassi passacavi 1U','cm',1,0,0,false,''],
+  ['powertronix','Antares Pro 1K Rack/Tower','ups',2,0,0,false,'UPS 1 kVA / 0,9 kW, rack/tower'],
+  ['powertronix','Antares Pro 2K Rack/Tower','ups',2,0,0,false,'UPS 2 kVA / 1,8 kW, rack/tower'],
+  ['powertronix','Antares Pro 3K Rack/Tower','ups',2,0,0,false,'UPS 3 kVA / 2,7 kW, rack/tower'],
+  ['powertronix','Antares Pro 6K Rack/Tower','ups',3,0,0,false,'UPS 6 kVA / 5,4 kW, rack/tower'],
+  ['powertronix','Antares Pro 10K Rack/Tower','ups',3,0,0,false,'UPS 10 kVA / 9 kW, rack/tower'],
+  ['powertronix','Vector RI 1/1-10K (modulo)','ups',3,0,0,false,'UPS modulare monofase 10 kVA, modulo 132 mm'],
+  ['powertronix','Vector RI 3/1-10K (modulo)','ups',3,0,0,false,'UPS modulare trifase/monofase 10 kVA, modulo 132 mm'],
+  ['powertronix','Vector RI 3/3-10K (modulo)','ups',3,0,0,false,'UPS modulare trifase 10 kVA, modulo 132 mm'],
+  ['powertronix','CMP-R CMPR2U024','ups',2,0,0,false,'raddrizzatore DC 19"']
 ];
 const FIELD_MODELS=[
   // Ubiquiti — access point

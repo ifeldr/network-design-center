@@ -72,7 +72,28 @@ const VENDORS={
   zte:{n:'ZTE',logo:'ZTE',c:'#0066b3'},
   ruckus:{n:'Ruckus',logo:'RUCKUS',c:'#f58025'},
   synology:{n:'Synology',logo:'Synology',c:'#3a4b5c'},
-  dell:{n:'Dell',logo:'DELL',c:'#007db8'}
+  dell:{n:'Dell',logo:'DELL',c:'#007db8'},
+  qnap:{n:'QNAP',logo:'QNAP',c:'#1f6fb5',bc:'#5aa9ff'},
+  hikvision:{n:'Hikvision',logo:'HIKVISION',c:'#d7000f',bc:'#ff4d4d'},
+  apc:{n:'APC',logo:'APC',c:'#3dcd58',bc:'#3dcd58'},
+  eaton:{n:'Eaton',logo:'EATON',c:'#005eb8',bc:'#4da3ff'},
+  fortinet:{n:'Fortinet',logo:'FORTINET',c:'#da291c',bc:'#ff5a4d'},
+  sophos:{n:'Sophos',logo:'SOPHOS',c:'#0b5ed7',bc:'#6ea8fe'},
+  watchguard:{n:'WatchGuard',logo:'WatchGuard',c:'#c8102e',bc:'#ff5a6e'},
+  paloalto:{n:'Palo Alto Networks',logo:'paloalto',c:'#fa582d',bc:'#fa582d'},
+  lenovo:{n:'Lenovo',logo:'Lenovo',c:'#e2231a',bc:'#ff5a52'},
+  supermicro:{n:'Supermicro',logo:'SUPERMICRO',c:'#00a651',bc:'#3ddc84'},
+  fujitsu:{n:'Fujitsu',logo:'FUJITSU',c:'#e60012',bc:'#ff4d5e'},
+  tplink:{n:'TP-Link Omada',logo:'tp-link',c:'#0aa1b5',bc:'#36c6d6'},
+  netgear:{n:'Netgear',logo:'NETGEAR',c:'#5c2d91',bc:'#b07ee8'},
+  zyxel:{n:'Zyxel',logo:'ZYXEL',c:'#0068b7',bc:'#4da3ff'},
+  dlink:{n:'D-Link',logo:'D-Link',c:'#00a0b0',bc:'#36c6d6'},
+  juniper:{n:'Juniper / Mist',logo:'JUNIPER',c:'#6ba539',bc:'#8fd14f'},
+  extreme:{n:'Extreme Networks',logo:'EXTREME',c:'#7b2fbe',bc:'#b884ef'},
+  panduit:{n:'Panduit',logo:'PANDUIT',c:'#3a3a3a'},
+  commscope:{n:'CommScope',logo:'CommScope',c:'#ff6a13'},
+  legrand:{n:'Legrand',logo:'legrand',c:'#4d4d4f'},
+  schneider:{n:'Schneider Electric',logo:'Schneider',c:'#3dcd58'}
 };
 const RACK_MODELS=[
   // Ubiquiti
@@ -329,7 +350,176 @@ const RACK_MODELS=[
   ['dell','PowerVault ME4024','srv',2,0,0,false,'storage 24 dischi'],
   ['dell','PowerVault ME5012','srv',2,0,0,false,'storage 12 dischi'],
   ['dell','PowerVault ME5024','srv',2,0,0,false,'storage 24 dischi'],
-  ['dell','PowerVault ME5084','srv',5,0,0,false,'storage 84 dischi']
+  ['dell','PowerVault ME5084','srv',5,0,0,false,'storage 84 dischi'],
+  ['qnap','TS-464U','srv',1,0,0,false,'NAS 4 dischi'],
+  ['qnap','TS-432PXU','srv',1,0,0,false,'NAS 4 dischi'],
+  ['qnap','TS-977XU','srv',1,0,0,false,'NAS 9 dischi'],
+  ['qnap','TS-h987XU-RP','srv',1,0,0,false,'NAS 9 dischi, alimentazione ridondata'],
+  ['qnap','TS-864eU','srv',2,0,0,false,'NAS 8 dischi, profondità ridotta'],
+  ['qnap','TS-873AeU','srv',2,0,0,false,'NAS 8 dischi, profondità ridotta'],
+  ['qnap','TS-832PXU','srv',2,0,0,false,'NAS 8 dischi'],
+  ['qnap','TS-1264U-RP','srv',2,0,0,false,'NAS 12 dischi, alimentazione ridondata'],
+  ['qnap','TS-1273AU-RP','srv',2,0,0,false,'NAS 12 dischi, alimentazione ridondata'],
+  ['qnap','TS-1232PXU-RP','srv',2,0,0,false,'NAS 12 dischi, alimentazione ridondata'],
+  ['qnap','TS-h1886XU-RP','srv',2,0,0,false,'NAS 18 dischi, alimentazione ridondata'],
+  ['qnap','TS-h1887XU-RP','srv',2,0,0,false,'NAS 18 dischi, alimentazione ridondata'],
+  ['qnap','TS-h2287XU-RP','srv',2,0,0,false,'NAS 22 dischi, alimentazione ridondata'],
+  ['qnap','TS-1673AU-RP','srv',3,0,0,false,'NAS 16 dischi, alimentazione ridondata'],
+  ['qnap','TS-h1683XU-RP','srv',3,0,0,false,'NAS 16 dischi, alimentazione ridondata'],
+  ['qnap','TS-h3087XU-RP','srv',3,0,0,false,'NAS 30 dischi, alimentazione ridondata'],
+  ['qnap','TS-h2483XU-RP','srv',4,0,0,false,'NAS 24 dischi, alimentazione ridondata'],
+  ['qnap','TL-R400S','srv',1,0,0,false,'NAS espansione 4 dischi'],
+  ['qnap','TL-R1200S-RP','srv',2,0,0,false,'NAS espansione 12 dischi'],
+  ['hikvision','DS-7608NI-K2','srv',1,0,0,false,'NVR 8 canali, 2 dischi'],
+  ['hikvision','DS-7616NI-K2','srv',1,0,0,false,'NVR 16 canali, 2 dischi'],
+  ['hikvision','DS-7632NI-K2','srv',1,0,0,false,'NVR 32 canali, 2 dischi'],
+  ['hikvision','DS-7616NXI-I2/S','srv',1,0,0,false,'NVR AcuSense 16 canali, 2 dischi'],
+  ['hikvision','DS-7716NI-K4','srv',2,0,0,false,'NVR 16 canali, 4 dischi — 1,5 U, occupa 2 U'],
+  ['hikvision','DS-7732NI-K4','srv',2,0,0,false,'NVR 32 canali, 4 dischi — 1,5 U, occupa 2 U'],
+  ['hikvision','DS-7716NI-K4/16P','srv',2,0,0,false,'NVR 16 canali con 16 PoE — 1,5 U, occupa 2 U'],
+  ['hikvision','DS-7716NXI-I4/S','srv',2,0,0,false,'NVR AcuSense 16 canali — 1,5 U, occupa 2 U'],
+  ['hikvision','DS-7716NI-M4','srv',2,0,0,false,'NVR 8K 16 canali — 1,5 U, occupa 2 U'],
+  ['hikvision','DS-9632NI-M8','srv',2,0,0,false,'NVR 32 canali, 8 dischi'],
+  ['hikvision','DS-9664NI-M8','srv',2,0,0,false,'NVR 64 canali, 8 dischi'],
+  ['hikvision','DS-3E0526P-E/M','sw',1,24,2,true,'switch PoE'],
+  ['apc','Smart-UPS SMT750RMI2U','ups',2,0,0,false,'UPS 750 VA, line-interactive'],
+  ['apc','Smart-UPS SMT1000RMI2U','ups',2,0,0,false,'UPS 1000 VA, line-interactive'],
+  ['apc','Smart-UPS SMT1500RMI2U','ups',2,0,0,false,'UPS 1500 VA, line-interactive'],
+  ['apc','Smart-UPS SMT2200RMI2U','ups',2,0,0,false,'UPS 2200 VA, line-interactive'],
+  ['apc','Smart-UPS SMT3000RMI2U','ups',2,0,0,false,'UPS 3000 VA, line-interactive'],
+  ['apc','Smart-UPS C SMC1000I-2U','ups',2,0,0,false,'UPS 1000 VA'],
+  ['apc','Smart-UPS C SMC1500I-2U','ups',2,0,0,false,'UPS 1500 VA'],
+  ['apc','Smart-UPS On-Line SRT1000RMXLI','ups',2,0,0,false,'UPS 1000 VA, on-line'],
+  ['apc','Smart-UPS On-Line SRT2200RMXLI','ups',2,0,0,false,'UPS 2200 VA, on-line'],
+  ['apc','Smart-UPS On-Line SRT3000RMXLI','ups',2,0,0,false,'UPS 3000 VA, on-line'],
+  ['apc','Easy UPS SRV SRVSPM3KRIL','ups',2,0,0,false,'UPS 3 kVA, on-line'],
+  ['apc','Rack PDU Switched AP7920B','vde',1,8,0,false,''],
+  ['apc','Rack PDU Switched AP7921B','vde',1,8,0,false,''],
+  ['apc','Rack PDU Basic AP9559','vde',1,10,0,false,''],
+  ['eaton','5P 650i Rack 1U','ups',1,0,0,false,'UPS 650 VA, line-interactive'],
+  ['eaton','5P 1150i Rack 1U','ups',1,0,0,false,'UPS 1150 VA, line-interactive'],
+  ['eaton','5P 1550i Rack 1U','ups',1,0,0,false,'UPS 1550 VA, line-interactive'],
+  ['eaton','5PX 1500i RT2U G2','ups',2,0,0,false,'UPS 1500 VA, line-interactive'],
+  ['eaton','5PX 2200i RT2U G2','ups',2,0,0,false,'UPS 2200 VA, line-interactive'],
+  ['eaton','5PX 3000i RT2U G2','ups',2,0,0,false,'UPS 3000 VA, line-interactive'],
+  ['eaton','5SC 2200i RT','ups',2,0,0,false,'UPS 2200 VA, line-interactive'],
+  ['eaton','9PX 1000i RT2U','ups',2,0,0,false,'UPS 1000 VA, on-line'],
+  ['eaton','9PX 1500i RT2U','ups',2,0,0,false,'UPS 1500 VA, on-line'],
+  ['eaton','9PX 2200i RT2U','ups',2,0,0,false,'UPS 2200 VA, on-line'],
+  ['eaton','9PX 3000i RT2U','ups',2,0,0,false,'UPS 3000 VA, on-line'],
+  ['eaton','5PX EBM 72V RT2U','ups',2,0,0,false,'modulo batterie aggiuntivo'],
+  ['fortinet','FortiGate 40F','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['fortinet','FortiGate 60F','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['fortinet','FortiGate 80F','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['fortinet','FortiGate 100F','fw',1,0,0,false,'firewall'],
+  ['fortinet','FortiGate 120G','fw',1,0,0,false,'firewall'],
+  ['fortinet','FortiGate 200F','fw',1,0,0,false,'firewall'],
+  ['fortinet','FortiGate 400F','fw',1,0,0,false,'firewall'],
+  ['fortinet','FortiGate 600F','fw',1,0,0,false,'firewall'],
+  ['fortinet','FortiSwitch 124F','sw',1,24,4,false,''],
+  ['fortinet','FortiSwitch 124F-POE','sw',1,24,4,true,''],
+  ['fortinet','FortiSwitch 148F','sw',1,48,4,false,''],
+  ['fortinet','FortiSwitch 148F-POE','sw',1,48,4,true,''],
+  ['fortinet','FortiSwitch 424E','sw',1,24,4,false,''],
+  ['fortinet','FortiSwitch 448E','sw',1,48,4,false,''],
+  ['sophos','XGS 2100','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 2300','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 3100','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 3300','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 4300','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 4500','fw',1,0,0,false,'firewall'],
+  ['sophos','XGS 87','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['sophos','XGS 107','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['sophos','XGS 116','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['sophos','XGS 126','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['sophos','XGS 136','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['watchguard','Firebox M290','fw',1,0,0,false,'firewall'],
+  ['watchguard','Firebox M390','fw',1,0,0,false,'firewall'],
+  ['watchguard','Firebox M590','fw',1,0,0,false,'firewall'],
+  ['watchguard','Firebox M690','fw',1,0,0,false,'firewall'],
+  ['watchguard','Firebox M4800','fw',1,0,0,false,'firewall'],
+  ['watchguard','Firebox T45','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['watchguard','Firebox T85','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['paloalto','PA-1410','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-1420','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-3410','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-3420','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-3430','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-3440','fw',1,0,0,false,'firewall'],
+  ['paloalto','PA-440','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['paloalto','PA-450','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['paloalto','PA-460','fw',1,0,0,false,'firewall da tavolo, a rack con kit'],
+  ['lenovo','ThinkSystem SR250 V3','srv',1,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR630 V2','srv',1,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR630 V3','srv',1,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR635 V3','srv',1,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR645 V3','srv',1,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR650 V2','srv',2,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR650 V3','srv',2,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR655 V3','srv',2,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR665 V3','srv',2,0,0,false,'server'],
+  ['lenovo','ThinkSystem SR850 V3','srv',2,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX1330 M5','srv',1,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX2530 M6','srv',1,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX2530 M7','srv',1,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX2540 M6','srv',2,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX2540 M7','srv',2,0,0,false,'server'],
+  ['fujitsu','PRIMERGY RX4770 M7','srv',2,0,0,false,'server'],
+  ['supermicro','SuperServer 1U','srv',1,0,0,false,'server, configurazione a scelta'],
+  ['supermicro','SuperServer 2U','srv',2,0,0,false,'server, configurazione a scelta'],
+  ['supermicro','SuperServer 4U','srv',4,0,0,false,'server, configurazione a scelta'],
+  ['supermicro','SuperStorage 4U 36 dischi','srv',4,0,0,false,'storage 36 dischi'],
+  ['tplink','SG2428P','sw',1,24,4,true,''],
+  ['tplink','SG3428','sw',1,24,4,false,''],
+  ['tplink','SG3428MP','sw',1,24,4,true,''],
+  ['tplink','SG3452','sw',1,48,4,false,''],
+  ['tplink','SG3452P','sw',1,48,4,true,''],
+  ['tplink','SX3008F','sw',1,0,8,false,'8× SFP+'],
+  ['tplink','TL-SG1024D','sw',1,24,0,false,'non gestito'],
+  ['tplink','TL-SG1048','sw',1,48,0,false,'non gestito'],
+  ['netgear','GS724T','sw',1,24,2,false,''],
+  ['netgear','GS748T','sw',1,48,4,false,''],
+  ['netgear','M4250-26G4F-PoE+','sw',1,26,4,true,''],
+  ['netgear','M4300-52G','sw',1,50,2,false,'2 porte 10GBASE-T'],
+  ['netgear','XS708T','sw',1,8,2,false,'10 GbE'],
+  ['zyxel','GS1920-24HPv2','sw',1,24,4,true,'uplink combo'],
+  ['zyxel','XGS1930-28','sw',1,24,4,false,'uplink SFP+'],
+  ['zyxel','XGS1930-52','sw',1,48,4,false,'uplink SFP+'],
+  ['zyxel','USG FLEX 500','fw',1,0,0,false,'firewall'],
+  ['zyxel','USG FLEX 700','fw',1,0,0,false,'firewall'],
+  ['dlink','DGS-1024D','sw',1,24,0,false,'non gestito'],
+  ['dlink','DGS-1100-24V2','sw',1,24,0,false,'smart'],
+  ['dlink','DGS-1210-28','sw',1,24,4,false,''],
+  ['dlink','DGS-1210-28P','sw',1,24,4,true,''],
+  ['dlink','DGS-1210-52','sw',1,48,4,false,''],
+  ['dlink','DGS-1510-28X','sw',1,24,4,false,'uplink SFP+'],
+  ['juniper','EX2300-24T','sw',1,24,4,false,'uplink SFP+'],
+  ['juniper','EX2300-24P','sw',1,24,4,true,'uplink SFP+'],
+  ['juniper','EX2300-48T','sw',1,48,4,false,'uplink SFP+'],
+  ['juniper','EX2300-48P','sw',1,48,4,true,'uplink SFP+'],
+  ['juniper','EX3400-24P','sw',1,24,6,true,'4× SFP+ + 2× QSFP+'],
+  ['juniper','EX3400-48P','sw',1,48,6,true,'4× SFP+ + 2× QSFP+'],
+  ['extreme','X440-G2-24t-10GE4','sw',1,24,4,false,'uplink SFP+'],
+  ['extreme','X440-G2-48p-10GE4','sw',1,48,4,true,'uplink SFP+'],
+  ['extreme','5320-24P-8XE','sw',1,24,8,true,'8× SFP+'],
+  ['extreme','5320-48P-8XE','sw',1,48,8,true,'8× SFP+'],
+  ['panduit','Patch panel 24 porte Cat 6 (CP24BLY)','patch',1,24,0,false,''],
+  ['panduit','Patch panel 48 porte Cat 6 (CP48BLY)','patch',2,48,0,false,''],
+  ['panduit','Cassetto fibra Opticom FRME1','fo',1,24,0,false,'LC'],
+  ['panduit','Passacavi NetManager NM1','cm',1,0,0,false,''],
+  ['panduit','Passacavi NetManager NM2','cm',2,0,0,false,'doppia altezza'],
+  ['commscope','SYSTIMAX 360 patch panel 24 porte Cat 6A','patch',1,24,0,false,''],
+  ['commscope','SYSTIMAX 360 patch panel 48 porte Cat 6A','patch',2,48,0,false,''],
+  ['commscope','360 G2 cassetto fibra 1U','fo',1,24,0,false,'LC'],
+  ['commscope','Passacavi orizzontale 1U','cm',1,0,0,false,''],
+  ['legrand','LCS3 patch panel 24 porte Cat 6A','patch',1,24,0,false,''],
+  ['legrand','LCS3 patch panel 24 porte Cat 6','patch',1,24,0,false,''],
+  ['legrand','LCS3 cassetto ottico 1U','fo',1,24,0,false,'LC'],
+  ['legrand','LCS3 passacavi 1U','cm',1,0,0,false,''],
+  ['schneider','Actassi patch panel 24 porte Cat 6A','patch',1,24,0,false,''],
+  ['schneider','Actassi patch panel 24 porte Cat 6','patch',1,24,0,false,''],
+  ['schneider','Actassi cassetto fibra 1U','fo',1,24,0,false,'LC'],
+  ['schneider','Actassi passacavi 1U','cm',1,0,0,false,'']
 ];
 const FIELD_MODELS=[
   // Ubiquiti — access point
@@ -365,15 +555,24 @@ const FIELD_MODELS=[
   ['synology','DS124','altro','NAS da tavolo, 1 disco'],['synology','DS223','altro','NAS da tavolo, 2 dischi'],['synology','DS223j','altro','NAS da tavolo, 2 dischi'],['synology','DS224+','altro','NAS da tavolo, 2 dischi'],['synology','DS225+','altro','NAS da tavolo, 2 dischi'],['synology','DS725+','altro','NAS da tavolo, 2 dischi'],['synology','DS423','altro','NAS da tavolo, 4 dischi'],['synology','DS423+','altro','NAS da tavolo, 4 dischi'],['synology','DS425+','altro','NAS da tavolo, 4 dischi'],['synology','DS723+','altro','NAS da tavolo, 2 dischi'],['synology','DS923+','altro','NAS da tavolo, 4 dischi'],['synology','DS925+','altro','NAS da tavolo, 4 dischi'],['synology','DS1522+','altro','NAS da tavolo, 5 dischi'],['synology','DS1525+','altro','NAS da tavolo, 5 dischi'],['synology','DS1621+','altro','NAS da tavolo, 6 dischi'],['synology','DS1821+','altro','NAS da tavolo, 8 dischi'],['synology','DS1825+','altro','NAS da tavolo, 8 dischi'],['synology','DS1823xs+','altro','NAS da tavolo, 8 dischi'],['synology','DS2422+','altro','NAS da tavolo, 12 dischi'],['synology','DS3622xs+','altro','NAS da tavolo, 12 dischi'],['synology','DS620slim','altro','NAS da tavolo, 6 dischi 2,5″'],
   ['synology','DVA1622','altro','NVR da tavolo, 2 dischi'],['synology','DVA3221','altro','NVR da tavolo, 4 dischi'],['synology','DVA3219','altro','NVR da tavolo, 4 dischi'],['synology','NVR1218','altro','NVR da tavolo, 2 dischi'],
   ['synology','BC500','cam','bullet 5 MP'],['synology','TC500','cam','turret 5 MP'],['synology','BC800Z','cam','bullet 4K varifocale'],['synology','CC400W','cam','Wi-Fi 4 MP da interno'],
-  ['synology','RT6600ax','ap','router Wi-Fi 6'],['synology','RT2600ac','ap','router Wi-Fi 5'],['synology','WRX560','ap','router Wi-Fi 6 mesh']
+  ['synology','RT6600ax','ap','router Wi-Fi 6'],['synology','RT2600ac','ap','router Wi-Fi 5'],['synology','WRX560','ap','router Wi-Fi 6 mesh'],
+  ['qnap','TS-233','altro','NAS da tavolo, 2 dischi'],['qnap','TS-264','altro','NAS da tavolo, 2 dischi'],['qnap','TS-464','altro','NAS da tavolo, 4 dischi'],['qnap','TS-664','altro','NAS da tavolo, 6 dischi'],['qnap','TS-873A','altro','NAS da tavolo, 8 dischi'],['qnap','TS-h973AX','altro','NAS da tavolo, 9 dischi'],['qnap','TVS-h874','altro','NAS da tavolo, 8 dischi'],['hikvision','DS-2CD2043G2-I','cam','bullet 4 MP'],['hikvision','DS-2CD2143G2-I','cam','dome 4 MP'],['hikvision','DS-2CD2347G2-LU','cam','turret ColorVu 4 MP'],['hikvision','DS-2CD2387G2-LU','cam','turret ColorVu 8 MP'],['hikvision','DS-2CD2T46G2-4I','cam','bullet 4 MP lunga portata'],['hikvision','DS-2CD2546G2-IS','cam','mini dome 4 MP'],['hikvision','DS-2CD2H46G2-IZS','cam','dome varifocale 4 MP'],['hikvision','DS-2DE4425IW-DE','cam','speed dome PTZ 4 MP'],['hikvision','DS-7608NI-K1','altro','NVR da tavolo, 8 canali'],['hikvision','DS-3E0105P-E','altro','switch PoE 5 porte'],['fortinet','FortiAP 231F','ap','Wi-Fi 6'],['fortinet','FortiAP 431F','ap','Wi-Fi 6'],['fortinet','FortiAP 231G','ap','Wi-Fi 6E'],['fortinet','FortiAP 431G','ap','Wi-Fi 6E'],['tplink','EAP225','ap','Wi-Fi 5'],['tplink','EAP245','ap','Wi-Fi 5'],['tplink','EAP610','ap','Wi-Fi 6'],['tplink','EAP650','ap','Wi-Fi 6'],['tplink','EAP670','ap','Wi-Fi 6'],['tplink','EAP773','ap','Wi-Fi 7'],['tplink','EAP225-Outdoor','ap','Wi-Fi 5 esterno'],['tplink','OC200','altro','controller Omada'],['tplink','ER7206','altro','router VPN da tavolo'],['netgear','WAX615','ap','Wi-Fi 6'],['netgear','WAX618','ap','Wi-Fi 6'],['netgear','WAX620','ap','Wi-Fi 6'],['netgear','WAX630','ap','Wi-Fi 6'],['zyxel','NWA210AX','ap','Wi-Fi 6'],['zyxel','NWA220AX-6E','ap','Wi-Fi 6E'],['zyxel','WAX510D','ap','Wi-Fi 6'],['zyxel','WAX610D','ap','Wi-Fi 6'],['zyxel','WAX630S','ap','Wi-Fi 6'],['zyxel','WBE660S','ap','Wi-Fi 7'],['zyxel','USG FLEX 100','altro','firewall da tavolo'],['zyxel','USG FLEX 200','altro','firewall da tavolo'],['juniper','Mist AP12','ap','Wi-Fi 6 a parete'],['juniper','Mist AP32','ap','Wi-Fi 6'],['juniper','Mist AP34','ap','Wi-Fi 6E'],['juniper','Mist AP43','ap','Wi-Fi 6'],['juniper','Mist AP45','ap','Wi-Fi 6E'],['juniper','Mist AP47','ap','Wi-Fi 7'],['extreme','AP305C','ap','Wi-Fi 6'],['extreme','AP410C','ap','Wi-Fi 6'],['extreme','AP3000','ap','Wi-Fi 6E'],['extreme','AP4000','ap','Wi-Fi 6E'],['extreme','AP5010','ap','Wi-Fi 7'],['sophos','XGS 87','altro','firewall da tavolo'],['watchguard','Firebox T45','altro','firewall da tavolo'],['fortinet','FortiGate 40F','altro','firewall da tavolo']
 ];
 const mslug=s=>s.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const MODELS={};
 RACK_MODELS.forEach(([v,m,k,h,rj,sfp,poe,note])=>{let id=v+'-'+mslug(m);if(MODELS[id])id+=m.includes('+')?'-plus':'-2';MODELS[id]={id,v,m,k,h,rj,sfp,poe,note,rack:true}});
 FIELD_MODELS.forEach(([v,m,k,note])=>{let id='f-'+v+'-'+mslug(m);if(MODELS[id])id+=m.includes('+')?'-plus':'-2';MODELS[id]={id,v,m,k,note,rack:false}});
 const mName=m=>`${VENDORS[m.v].n.split(' / ')[0]} ${m.m}`;
-const mSpec=m=>m.rack&&m.k==='srv'?`${m.h} U · ${m.note}`:m.rack?[`${m.h} U`,m.rj?`${m.rj} RJ45`:'',m.sfp?`${m.sfp} SFP`:'',m.poe?'PoE':''].filter(Boolean).join(' · '):m.note;
-function mkModelItem(id,pos=1){const m=MODELS[id];const it=mkItem(m.k,pos,m.k==='patch'?{ports:m.rj,model:id}:{ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:id},{name:mName(m)});it.h=hOf(it);return it}
+const mSpec=m=>!m.rack?m.note:['srv','ups'].includes(m.k)?`${m.h} U · ${m.note}`:['patch','fo'].includes(m.k)?`${m.h} U · ${m.rj} porte${m.note?' '+m.note:''}`:m.k==='cm'?`${m.h} U${m.note?' · '+m.note:''}`:m.k==='vde'?`${m.h} U · ${m.rj} prese C13${m.sfp?' + '+m.sfp+' C19':''}`:m.rack?[`${m.h} U`,m.rj?`${m.rj} RJ45`:'',m.sfp?`${m.sfp} SFP`:'',m.poe?'PoE':''].filter(Boolean).join(' · '):m.note;
+function modelProps(m){switch(m.k){
+  case 'patch':case 'fo':return {ports:m.rj,model:m.id};
+  case 'cm':return {model:m.id};
+  case 'ups':return {size:m.h,onShelf:true,model:m.id};
+  case 'vde':return {c13:m.rj,c19:m.sfp,model:m.id};
+  case 'unel':return {sockets:m.rj,model:m.id};
+  default:return {ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:m.id}}}
+const ACTIVE=['sw','fw','router','srv','hub','mc'];
+function mkModelItem(id,pos=1){const m=MODELS[id];const it=mkItem(m.k,pos,modelProps(m),{name:mName(m)});it.h=hOf(it);return it}
 
 
 function hOf(it){const p=it.props;if(p.model&&MODELS[p.model])return MODELS[p.model].h;switch(it.kind){
@@ -567,7 +766,8 @@ function autoArrange(r){
   if(fo.length&&needsFiberReserve(r)&&!fo.some(x=>x.props.dir==='partenza')&&!foRes.length){foRes=[mkItem('blank',1,{reserve:'fibra'})];notes.push('aggiunto un pannello cieco di riserva per il cassetto di partenza')}
   const act=f('attivi').sort((a,b)=>KINDS[a.kind].sub-KINDS[b.kind].sub);
   const pw=f('alimentazione').sort((a,b)=>(a.kind==='poe')-(b.kind==='poe'));
-  const withCm=seq=>{const out=[];let c=0;seq.forEach(it=>{const w=Math.min(it.h,2);if(c+w>2){out.push(mkItem('cm'));c=0}out.push(it);c+=w});if(seq.length)out.push(mkItem('cm'));return out};
+  const cmPool=r.items.filter(i=>i.kind==='cm'&&i.props.model);const newCm=()=>cmPool.shift()||mkItem('cm');
+  const withCm=seq=>{const out=[];let c=0;seq.forEach(it=>{const w=Math.min(it.h,2);if(c+w>2){out.push(newCm());c=0}out.push(it);c+=w});if(seq.length)out.push(newCm());return out};
   const T=withCm([...fo,...foRes,...f('rame'),...cuRes,...act]);
   const B=withCm([...pw,...f('accessori')]);
   const sum=a=>a.reduce((s,i)=>s+i.h,0);
@@ -608,10 +808,10 @@ function portsHtml(n,{rows=1,cls='p',group=6,marks,style=''}={}){
 function faceHtml(it,letter){
   const p=it.props;let fc='',extra='';
   const md=p.model&&MODELS[p.model];
-  if(md&&it.kind!=='patch'){const V=VENDORS[md.v];
-    if(it.kind==='srv')fc=`<span class="brand-t">${esc(V.logo)}</span><div class="bays">${'<i></i>'.repeat(md.h>1?12:6)}</div><i class="led"></i>`;
-    else{const many=md.sfp>8;fc=`<span class="brand-t">${esc(V.logo)}</span><span style="flex:1"></span>${md.rj?portsHtml(md.rj,{rows:md.rj>28?2:1}):''}${md.sfp?(many?portsHtml(md.sfp,{rows:2,cls:'p sf',group:4}):`<span style="display:flex;gap:2px">${'<i class="sfp"></i>'.repeat(md.sfp)}</span>`):''}${md.poe?'<span class="cap">PoE</span>':''}<i class="led"></i>`}
-    return {cls:'k-'+it.kind+' v-'+md.v,html:`<i class="ear"></i><div class="fc">${fc}</div><i class="ear"></i>${letter?`<span class="tag">${letter}</span>`:''}`}}
+  if(md&&ACTIVE.includes(it.kind)){const V=VENDORS[md.v];
+    if(it.kind==='srv')fc=`<span class="brand-t" ${V.bc?`style="color:${V.bc}"`:''}>${esc(V.logo)}</span><div class="bays">${'<i></i>'.repeat(md.h>1?12:6)}</div><i class="led"></i>`;
+    else{const many=md.sfp>8;fc=`<span class="brand-t" ${V.bc?`style="color:${V.bc}"`:''}>${esc(V.logo)}</span><span style="flex:1"></span>${md.rj?portsHtml(md.rj,{rows:md.rj>28?2:1}):''}${md.sfp?(many?portsHtml(md.sfp,{rows:2,cls:'p sf',group:4}):`<span style="display:flex;gap:2px">${'<i class="sfp"></i>'.repeat(md.sfp)}</span>`):''}${md.poe?'<span class="cap">PoE</span>':''}<i class="led"></i>`}
+    return {cls:'k-'+it.kind+' vf v-'+md.v,html:`<i class="ear"></i><div class="fc">${fc}</div><i class="ear"></i>${letter?`<span class="tag">${letter}</span>`:''}`}}
   const mark=i=>{const d=it.ports[i];return d?d.t==='link'?'lk':d.note?'nt':'':''};
   switch(it.kind){
     case 'fo':{const col=p.fiber==='OS2'?'#f2c200':p.fiber==='OM4'?'#b23bb6':'#19b5c9';
@@ -626,7 +826,7 @@ function faceHtml(it,letter){
     case 'mc':fc=`<span class="cap">MEDIA CONV.</span><span style="flex:1"></span>${portsHtml(+p.ports,{group:1})}<i class="sfp"></i>`;break;
     case 'srv':fc=`<div class="bays">${'<i></i>'.repeat(12)}</div><i class="led"></i>`;break;
     case 'shelf':fc=`ripiano ${fmt(p.real)} U`;break;
-    case 'ups':fc=`<i class="lcd"></i><span>UPS${p.onShelf?' · su ripiano':''}</span><span style="flex:1"></span><i class="led"></i>`;break;
+    case 'ups':fc=`<i class="lcd"></i><span>${md?esc(VENDORS[md.v].logo)+' UPS':'UPS'+(p.onShelf?' · su ripiano':'')}</span><span style="flex:1"></span><i class="led"></i>`;break;
     case 'unel':fc=`<i class="swt"></i>${'<i class="sk"></i>'.repeat(+p.sockets)}`;break;
     case 'vde':fc=`<i class="swt"></i>${'<i class="c13"></i>'.repeat(+p.c13)}${'<i class="c19"></i>'.repeat(+p.c19)}`;break;
     case 'poe':fc=`<span>PoE</span>${portsHtml(+p.ports,{group:2})}<i class="led"></i>`;break;
@@ -678,7 +878,7 @@ function libHtml(){
   });
   return h;
 }
-const KLBL={fw:'Firewall e gateway',router:'Router e OLT',sw:'Switch',srv:'Server, NVR e storage',patch:'Patch panel',ap:'Access point',cam:'Telecamere',altro:'Altri apparati'};
+const KLBL={fw:'Firewall e gateway',router:'Router e OLT',sw:'Switch',srv:'Server, NAS, NVR e storage',ups:'UPS e batterie',vde:'PDU',fo:'Cassetti ottici',patch:'Patch panel',cm:'Passacavi',ap:'Access point',cam:'Telecamere',altro:'Altri apparati'};
 function modelsHtml(rack){
   const mq=rack?S.mqR:S.mqP;const q=mq.toLowerCase();
   const list=Object.values(MODELS).filter(m=>m.rack===rack&&(S.vend==='all'||m.v===S.vend)&&(!q||(m.m+' '+VENDORS[m.v].n+' '+(m.note||'')).toLowerCase().includes(q)));
@@ -853,10 +1053,12 @@ function itemHtml(r,it){
   const K=KINDS[it.kind],p=it.props,L=panelLetters(r);
   let props='';
   const md=p.model&&MODELS[p.model];
-  const msel=it.kind!=='patch'||md?`<div class="f"><label>Modello</label><select data-f="model"><option value="">Generico</option>${Object.keys(VENDORS).map(v=>{const ms=Object.values(MODELS).filter(m=>m.rack&&m.v===v&&m.k===it.kind);return ms.length?`<optgroup label="${esc(VENDORS[v].n)}">${ms.map(m=>`<option value="${m.id}" ${m.id===p.model?'selected':''}>${esc(m.m)}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>`:'';
-  if(md&&it.kind!=='patch')props=msel+`<div class="kv"><span>Marca</span><b>${esc(VENDORS[md.v].n)}</b></div><div class="kv"><span>${md.k==='srv'?'Caratteristiche':'Porte'}</span><b>${esc(mSpec(md))}</b></div>${md.note&&md.k!=='srv'?`<div class="kv"><span>Note</span><b>${esc(md.note)}</b></div>`:''}`;
+  const hasM=Object.values(MODELS).some(m=>m.rack&&m.k===it.kind);
+  const msel=!hasM?'':`<div class="f"><label>Modello</label><select data-f="model"><option value="">Generico</option>${Object.keys(VENDORS).map(v=>{const ms=Object.values(MODELS).filter(m=>m.rack&&m.v===v&&m.k===it.kind);return ms.length?`<optgroup label="${esc(VENDORS[v].n)}">${ms.map(m=>`<option value="${m.id}" ${m.id===p.model?'selected':''}>${esc(m.m)}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>`;
+  if(md&&ACTIVE.includes(it.kind))props=msel+`<div class="kv"><span>Marca</span><b>${esc(VENDORS[md.v].n)}</b></div><div class="kv"><span>${md.k==='srv'?'Caratteristiche':'Porte'}</span><b>${esc(mSpec(md))}</b></div>${md.note&&md.k!=='srv'?`<div class="kv"><span>Note</span><b>${esc(md.note)}</b></div>`:''}`;
   else switch(it.kind){
-    case 'fo':props=`<div class="f"><label>Uso</label>${sel('use',p.use,[['dorsale','Dorsale'],['distribuzione','Distribuzione'],['mista','Misto (non conforme)']])}</div>
+    case 'cm':props=msel;break;
+    case 'fo':props=msel+`<div class="f"><label>Uso</label>${sel('use',p.use,[['dorsale','Dorsale'],['distribuzione','Distribuzione'],['mista','Misto (non conforme)']])}</div>
       <div class="f"><label>Verso</label>${sel('dir',p.dir,[['arrivo','Arrivo'],['partenza','Partenza / rimando']])}</div>
       <div class="f"><label>Porte</label>${sel('ports',p.ports,[6,12,24])}</div>
       <div class="f"><label>Fibra</label>${sel('fiber',p.fiber,[['OS2','OS2 monomodale'],['OM3','OM3 multimodale'],['OM4','OM4 multimodale']])}</div>
@@ -865,10 +1067,10 @@ function itemHtml(r,it){
     case 'sw':props=msel+`<div class="f"><label>Porte RJ45</label>${sel('ports',p.ports,[8,16,24,48])}</div><div class="f"><label>Porte SFP</label>${sel('sfp',p.sfp,[0,2,4])}</div>${chk('poe',p.poe,'PoE')}`;break;
     case 'fw':case 'router':case 'hub':case 'mc':case 'poe':props=(['fw','router'].includes(it.kind)?msel:'')+`<div class="f"><label>Porte</label>${sel('ports',p.ports,[2,4,8,12,16,24])}</div>`;break;
     case 'srv':props=msel+`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>`;break;
-    case 'ups':props=`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>${chk('onShelf',p.onShelf,'Installate su apposito ripiano','obbligatorio')}`;break;
+    case 'ups':props=msel+(md?`<div class="kv"><span>Caratteristiche</span><b>${esc(mSpec(md))}</b></div>`:`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>`)+chk('onShelf',p.onShelf,md?'Montato su guide o ripiano':'Installate su apposito ripiano','le batterie vanno sostenute da ripiani o guide');break;
     case 'shelf':props=`<div class="f"><label>Altezza reale</label><input type="number" data-f="real" min="0.5" max="10" step="0.5" value="${p.real}"></div><div class="kv"><span>Occupa (arrotondato)</span><b>${it.h} U</b></div>`;break;
-    case 'unel':props=`<div class="f"><label>Prese</label>${sel('sockets',p.sockets,[4,6,8,9])}</div>`;break;
-    case 'vde':props=`<div class="f"><label>Prese C13</label>${sel('c13',p.c13,[4,6,8,10])}</div><div class="f"><label>Prese C19</label>${sel('c19',p.c19,[0,2,4])}</div>`;break;
+    case 'unel':props=msel+`<div class="f"><label>Prese</label>${sel('sockets',p.sockets,[4,6,8,9])}</div>`;break;
+    case 'vde':props=msel+`<div class="f"><label>Prese C13</label>${sel('c13',p.c13,[4,6,8,10])}</div><div class="f"><label>Prese C19</label>${sel('c19',p.c19,[0,2,4])}</div>`;break;
     case 'blank':props=`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div><div class="f"><label>Funzione</label>${sel('reserve',p.reserve,[['none','Copertura'],['fibra','Riserva cassetti ottici'],['rame','Riserva patch panel']])}</div>`;break;
   }
   let ports='';
@@ -1136,7 +1338,7 @@ $('#rightBody').addEventListener('change',e=>{
     mutate(()=>{
       if(f==='name'){it.name=val.trim();return}
       if(f==='model'){const old=it.props.model&&MODELS[it.props.model];const m=MODELS[val];const wasDefault=!it.name||(old&&it.name===mName(old));
-        if(m){Object.assign(it.props,it.kind==='patch'?{ports:m.rj,model:m.id}:{ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:m.id});if(wasDefault)it.name=mName(m)}else{delete it.props.model;if(wasDefault)it.name=''}
+        if(m){Object.assign(it.props,modelProps(m));if(wasDefault)it.name=mName(m)}else{delete it.props.model;if(wasDefault)it.name=''}
         Object.keys(it.ports).forEach(k=>{if(+k>+it.props.ports)delete it.ports[k]});
         const nh=hOf(it);if(nh!==it.h){if(!fits(r,it.pos,nh,it.id)){const alt=it.pos-(nh-it.h);if(fits(r,alt,nh,it.id))it.pos=alt;else{toast('Spazio insufficiente per l\'altezza del modello');return false}}it.h=nh}return}
       if(f==='pos'){const p=parseInt(val);if(!fits(r,p,it.h,it.id)){toast(`U${p}: posizione occupata o fuori dall'armadio`);return false}it.pos=p;return}

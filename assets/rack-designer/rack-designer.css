@@ -251,6 +251,8 @@ main{grid-area:main;position:relative;overflow:hidden;background:var(--tela);bac
 .card.mod b{font-size:14px}
 .brand-t{font-weight:800;font-size:calc(var(--uh) * .32);letter-spacing:.02em;white-space:nowrap;flex:none}
 .p.sf{width:calc(var(--uh) * .34);height:calc(var(--uh) * .24);background:#0b0c0e;box-shadow:none;border:1px solid #9aa1a9}
+.it.vf{background:#26292d}.it.vf .fc{background:linear-gradient(#35383d,#1f2124);color:#e4e7ea}
+.it.vf .p{background:#0b0c0e;box-shadow:inset 0 -2px 0 #5a6068}
 .it.v-ubiquiti,.it.v-aruba,.it.v-mikrotik,.it.v-zte{background:#d9dcdf}
 .it.v-hpe{background:#4a4e54}.it.v-synology{background:#1d2024}.it.v-dell{background:#1a1c1f}.it.v-cisco{background:#2c333c}.it.v-ruckus{background:#26282b}
 .it.v-ubiquiti .fc{background:linear-gradient(#f5f6f7,#dde0e4);color:#3b82f6}

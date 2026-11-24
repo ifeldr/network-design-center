@@ -277,51 +277,7 @@ function redo(){if(!S.fut.length)return;S.hist.push(JSON.stringify(P));P=JSON.pa
 function fixSel(){if(!rackById(S.rack))S.rack=P.racks[0]?.id;const r=R();if(!r||!r.items.some(i=>i.id===S.item)){S.item=null;S.port=null}if(S.plan&&!planById(S.plan))S.plan=P.plans[0]?.id||null;if(S.mk&&!mkObj(S.mk))S.mk=null}
 function mkObj(k){if(!k)return null;const[t,id]=k.split(':');return t==='rk'?rackById(id):P.devices.find(d=>d.id===id)}
 
-/* ---------------- progetto di esempio ---------------- */
-function demoSvg(){
-  const W=2000,H=1100;
-  const rooms=[[60,60,500,420,'Aula 1.01'],[560,60,440,420,'Aula 1.02'],[1000,60,400,420,'Segreteria'],[1400,60,300,420,'Locale tecnico'],[1700,60,240,420,'Servizi'],
-    [60,620,840,420,'Aula informatica'],[900,620,500,420,'Sala docenti'],[1400,620,540,420,'Laboratorio']];
-  let s=`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="#fff"/>`;
-  s+=`<defs><pattern id="g" width="50" height="50" patternUnits="userSpaceOnUse"><path d="M50 0H0V50" fill="none" stroke="#eef1f4" stroke-width="2"/></pattern></defs><rect x="60" y="60" width="1880" height="980" fill="url(#g)"/>`;
-  s+='<g fill="none" stroke="#3b4048" stroke-width="10">';rooms.forEach(([x,y,w,h])=>s+=`<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`);s+='</g>';
-  s+='<g fill="#fff">';rooms.forEach(([x,y,w,h])=>{const dy=y<300?y+h-6:y-6;s+=`<rect x="${x+w/2-45}" y="${dy}" width="90" height="12"/>`});s+='</g>';
-  s+='<g stroke="#3b4048" stroke-width="3" fill="none">';rooms.forEach(([x,y,w,h])=>{const cx=x+w/2-45,dy=y<300?y+h:y;s+=`<path d="M${cx} ${dy} A90 90 0 0 ${y<300?0:1} ${cx+90} ${dy+(y<300?-90:90)}"/>`});s+='</g>';
-  s+='<g font-family="Arial,sans-serif" font-size="34" fill="#5a6270" text-anchor="middle">';rooms.forEach(([x,y,w,h,t])=>s+=`<text x="${x+w/2}" y="${y+h/2+12}">${t}</text>`);
-  s+='<text x="1000" y="562" font-size="30" fill="#9aa1ab">Corridoio</text><text x="1000" y="1085" font-size="24" fill="#9aa1ab">Edificio A · Piano 1 · planimetria di esempio (40 × 22 m)</text></g>';
-  s+='<g stroke="#9aa1ab" stroke-width="3">';for(let i=0;i<8;i++)s+=`<line x1="${1760+i*22}" y1="500" x2="${1760+i*22}" y2="600"/>`;s+='</g>';
-  return s+'</svg>';
-}
-function demo(){
-  const bd=newRack({type:'BD',b:'A',floor:0,units:42,server:true,note:'Centro stella edificio A — sala server piano terra'});
-  const fd=newRack({type:'FD',b:'A',floor:1,units:24,hasLocals:true,note:'Armadio di piano, locale tecnico primo piano'});
-  const ld=newRack({type:'LD',b:'A',floor:1,units:12,techRoom:false,note:'Armadio locale aula informatica — da sistemare'});
-  bd.items=[mkItem('fo',1,{use:'dorsale',dir:'partenza'}),mkItem('fo',1,{use:'distribuzione',dir:'partenza',ports:12,fiber:'OM4'}),mkItem('patch'),mkItem('patch'),
-    mkItem('fw',1,{},{name:'Firewall perimetrale'}),mkItem('router'),mkItem('sw',1,{ports:48,poe:false},{name:'Core switch'}),mkItem('sw',1,{ports:24}),mkItem('ups',1,{size:2}),mkItem('vde'),mkItem('vde')];
-  fd.items=[mkItem('fo',1,{use:'dorsale',dir:'arrivo',ports:12}),mkItem('fo',1,{use:'distribuzione',dir:'partenza',ports:12,fiber:'OM4'}),mkItem('patch'),mkItem('patch'),
-    mkItem('sw',1,{ports:24,poe:true}),mkItem('sw',1,{ports:24,poe:true}),mkItem('unel'),mkItem('poe')];
-  ld.items=[mkItem('sw',12,{ports:24}),mkItem('patch',11),mkItem('fo',10,{use:'distribuzione',dir:'arrivo',ports:12,fiber:'OM4'}),mkItem('unel',3)];
-  P={name:'Sede di esempio',simplify:true,fill:true,slack:6,cables:true,racks:[bd,fd,ld],plans:[],devices:[]};
-  assignLetters();
-  quiet=true;autoArrange(bd);autoArrange(fd);quiet=false;
-  const link=(r1,it1,n1,r2,it2,n2)=>{const g=nextG(r1,r2.id);it1.ports[n1]={t:'link',r:r2.id,g,flip:false};it2.ports[n2]={t:'link',r:r1.id,g,flip:false}};
-  const foBD=bd.items.find(i=>i.kind==='fo'),foFD=fd.items.find(i=>i.kind==='fo');
-  link(bd,foBD,1,fd,foFD,1);link(bd,foBD,2,fd,foFD,2);
-  link(fd,fd.items.filter(i=>i.kind==='fo')[1],1,ld,ld.items.find(i=>i.kind==='fo'),1);
-  const pFD=fd.items.find(i=>i.kind==='patch'),pLD=ld.items.find(i=>i.kind==='patch');
-  link(fd,pFD,12,ld,pLD,20);
-  // planimetria di esempio: edificio A, piano 1 — 2000 px = 40 m
-  const pl={id:uid(),name:'Piano primo',b:'A',floor:1,w:2000,h:1100,scale:0.02,opacity:1};
-  P.plans.push(pl);
-  const blob=new Blob([demoSvg()],{type:'image/svg+xml'});IMG[pl.id]=URL.createObjectURL(blob);DB.put(pl.id,blob);
-  fd.loc={plan:pl.id,x:1550,y:330};ld.loc={plan:pl.id,x:170,y:960};
-  const dev=(kind,x,y,name,r,it,n)=>{const d={id:uid(),kind,plan:pl.id,x,y,name,rack:r?.id||null,item:it?.id||null,port:n||null};P.devices.push(d);if(it&&n)it.ports[n]={...(it.ports[n]||{t:'user'}),note:name};return d};
-  dev('to',230,140,'Aula 1.01',fd,pFD,1);dev('to',470,140,'Aula 1.01',fd,pFD,2);dev('to',780,140,'Aula 1.02',fd,pFD,3);dev('to',1200,140,'Segreteria',fd,pFD,4);
-  dev('ap',780,550,'Corridoio',fd,pFD,5);dev('cam',1840,550,'Ingresso servizi',fd,pFD,6);dev('to',1150,960,'Sala docenti',fd,pFD,7);
-  dev('to',330,1000,'Aula informatica',ld,pLD,1);dev('to',560,1000,'Aula informatica',ld,pLD,2);dev('to',850,760,'Aula informatica',ld,pLD,3);
-  dev('to',1880,960,'Laboratorio',null,null,null);
-  S.rack=fd.id;S.item=null;S.port=null;S.plan=pl.id;S.mk=null;S.hist=[];S.fut=[];S.pz={};
-}
+/* ---------------- progetto vuoto ---------------- */
 function blankProject(){P={name:'Nuovo progetto',simplify:true,fill:true,slack:6,cables:true,racks:[newRack({units:24})],plans:[],devices:[]};S.rack=P.racks[0].id;S.item=null;S.plan=null;S.mk=null;S.hist=[];S.fut=[];S.pz={}}
 
 /* ---------------- faccia degli elementi a rack ---------------- */
@@ -932,7 +888,6 @@ document.addEventListener('click',e=>{if(!e.target.closest('#moreMenu'))$('#more
 $('#moreMenu .menu-lista').addEventListener('click',e=>{
   const m=e.target.closest('[data-m]')?.dataset.m;if(!m)return;$('#moreMenu').classList.remove('open');
   ({topo:openTopo,print:()=>$('#printBtn').onclick(),csv:exportCsv,json:exportJson,import:()=>$('#fileIn').click(),share:shareLink,mode:toggleMode,help:openHelp,
-    demo:()=>{if(confirm('Sostituire il progetto corrente con quello di esempio?')){const old=JSON.stringify(P);demo();S.hist=[old];save();render()}},
     new:()=>{if(confirm('Creare un nuovo progetto vuoto? Puoi tornare indietro con Ctrl+Z.')){const old=JSON.stringify(P);blankProject();S.hist=[old];save();render()}}})[m]?.();
 });
 $('#fileIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;try{const j=JSON.parse(await f.text());if(!j.racks)throw 0;
@@ -1119,7 +1074,7 @@ let tt,quiet=false;function toast(m){if(quiet)return;const t=$('#toast');t.textC
   try{const uh=+localStorage.getItem('rd-uh');if(uh)S.uh=uh}catch(_){}
   if(!(await loadFromHash())){
     let saved=null;try{saved=JSON.parse(localStorage.getItem(STORE))}catch(_){}
-    if(saved&&saved.racks?.length){P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else demo();
+    if(saved&&saved.racks?.length){P=normalize(saved);S.rack=P.racks[0].id;S.plan=P.plans[0]?.id||null}else blankProject();
   }
   if(innerWidth<820)S.uh=Math.min(S.uh,20);
   render();

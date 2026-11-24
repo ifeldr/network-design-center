@@ -237,6 +237,16 @@ async def test_english(c):
     await pg.click('[data-view=rack]'); await pg.wait_for_timeout(200)
     await pg.keyboard.press('Control+a'); await pg.wait_for_timeout(150); await sweep('selezione multipla')
     await pg.keyboard.press('Escape')
+    await pg.evaluate("NDC_care.startTour()")
+    for i in range(9):
+        if await pg.query_selector('#tour'):
+            await pg.wait_for_timeout(80); await sweep(f'guida {i+1}'); await pg.click('[data-tour=next]')
+    await c.menu('backup'); await pg.wait_for_timeout(400); await sweep('backup spazio'); await pg.keyboard.press('Escape')
+    await pg.click('[data-view=plan]'); await pg.wait_for_timeout(300)
+    await pg.evaluate("mutate(()=>{PL().notes=[{id:'n1',t:'area',x:100,y:100,w:300,h:200,c:'rosso',s:'medio',text:'Zona'}]})")
+    await pg.click('#floatBar [data-annt]'); await pg.wait_for_timeout(150); await sweep('note strumento'); await pg.keyboard.press('Escape')
+    await pg.click('.anns [data-ann] .an-hit'); await pg.wait_for_timeout(150); await sweep('note pannello')
+    await pg.keyboard.press('Escape')
     for v in ['plan', 'campus']:
         await pg.click(f'[data-view={v}]'); await pg.wait_for_timeout(300); await sweep('vista ' + v)
         for t in await pg.eval_on_selector_all('[data-lt]', 'e=>e.map(x=>x.dataset.lt)'):
@@ -449,11 +459,42 @@ async def test_select(c):
     check('nessun errore', not c.errors, '; '.join(c.errors))
 
 
+async def test_care(c):
+    pg = c.pg
+    print('— note in planimetria, protezione dei dati, guida introduttiva')
+    await c.open('it')
+    await pg.evaluate("""async()=>{P.plans.push({id:'plN',name:'PT',b:'A',floor:0,w:1600,h:900,scale:0.02,opacity:1,walls:[]});await DB.put('plN',new Blob(['<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900"><rect width="1600" height="900" fill="#fff"/></svg>'],{type:'image/svg+xml'}));S.view='plan';S.plan='plN';save();render()}""")
+    await pg.wait_for_timeout(500)
+    texts = iter(['Passaggio a soffitto', 'Zona da non forare'])
+    pg.remove_listener('dialog', pg._ndc_dialog) if hasattr(pg, '_ndc_dialog') else None
+    await pg.evaluate("window.prompt=(m)=>/area/i.test(m)?'Zona da non forare':'Passaggio a soffitto';0")
+    await pg.click('#floatBar [data-annt]'); pw = await pg.locator('#pw').bounding_box()
+    await pg.mouse.click(pw['x'] + pw['width'] * .3, pw['y'] + pw['height'] * .3); await pg.wait_for_timeout(100)
+    await pg.click('[data-annt=arrow]'); await pg.mouse.move(pw['x'] + pw['width'] * .5, pw['y'] + pw['height'] * .5); await pg.mouse.down(); await pg.mouse.move(pw['x'] + pw['width'] * .35, pw['y'] + pw['height'] * .4, steps=4); await pg.mouse.up()
+    await pg.click('[data-annt=area]'); await pg.mouse.move(pw['x'] + pw['width'] * .6, pw['y'] + pw['height'] * .5); await pg.mouse.down(); await pg.mouse.move(pw['x'] + pw['width'] * .85, pw['y'] + pw['height'] * .8, steps=4); await pg.mouse.up()
+    await pg.click('[data-annt=end]'); await pg.wait_for_timeout(150)
+    kinds = await pg.evaluate("PL().notes.map(n=>n.t+':'+(n.text||''))")
+    check('note: testo, freccia e area', kinds == ['text:Passaggio a soffitto', 'arrow:', 'area:Zona da non forare'], str(kinds))
+    await pg.click('.anns [data-ann] .an-hit >> nth=0'); await pg.keyboard.press('Delete'); await pg.wait_for_timeout(100)
+    check('nota eliminata da tastiera', await pg.evaluate('PL().notes.length') == 2)
+    await pg.keyboard.press('Control+z'); await pg.wait_for_timeout(100)
+    check('note nel PNG e nella stampa', await pg.evaluate("planCanvas(PL(),600).then(c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=0;i<d.length;i+=4)if(d[i]>200&&d[i+1]<90&&d[i+2]<90)n++;return n>20})"))
+    await c.menu('backup'); await pg.wait_for_timeout(500)
+    mb = await pg.inner_text('#mBody') if await pg.evaluate("document.getElementById('modal').classList.contains('open')") else '(chiusa)'
+    check('spazio nel browser e protezione nel backup', 'Spazio nel browser' in mb.title() or 'SPAZIO NEL BROWSER' in mb or 'Spazio nel browser' in mb, mb[-200:])
+    await pg.keyboard.press('Escape')
+    await c.menu('tour'); await pg.wait_for_timeout(200); steps = 0
+    while await pg.query_selector('#tour') and steps < 12:
+        steps += 1; await pg.click('[data-tour=next]'); await pg.wait_for_timeout(60)
+    check('guida introduttiva completa', steps >= 7 and await pg.evaluate("localStorage.getItem('ndc-guida')") == '1', str(steps))
+    check('nessun errore', not c.errors, '; '.join(c.errors))
+
+
 async def main():
     srv, base = serve()
     async with async_playwright() as p:
         b = await p.chromium.launch()
-        for fn in (test_core, test_projects, test_tools, test_field, test_select, test_english):
+        for fn in (test_core, test_projects, test_tools, test_field, test_select, test_care, test_english):
             pg = await b.new_page(viewport={'width': 1500, 'height': 920}, accept_downloads=True)
             c = Ctx(pg, base)
             pg.on('pageerror', lambda e, c=c: c.errors.append(str(e)))

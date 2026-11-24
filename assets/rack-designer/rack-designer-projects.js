@@ -122,7 +122,8 @@ function diffProjects(A,B){
   for(const p of B.plans||[]){const o=pa[p.id];if(!o){add(gp(),'+',`Planimetria «${p.name}» aggiunta`);continue}
     if(o.name!==p.name)add(gp(),'~',`Planimetria «${o.name}» rinominata in «${p.name}»`);
     if(o.scale!==p.scale)add(gp(),'~',`«${p.name}»: scala modificata`);
-    if(!same(o.walls,p.walls))add(gp(),'~',`«${p.name}»: muri modificati`)}
+    if(!same(o.walls,p.walls))add(gp(),'~',`«${p.name}»: muri modificati`);
+    if(!same(o.notes||[],p.notes||[]))add(gp(),'~',`«${p.name}»: note modificate`)}
   for(const o of A.plans||[])if(!(B.plans||[]).some(p=>p.id===o.id))add(gp(),'-',`Planimetria «${o.name}» eliminata`);
   const da=Object.fromEntries((A.devices||[]).map(d=>[d.id,d]));const gd=()=>grp('dv','Apparati in planimetria');
   const dn=d=>`${DEV[d.kind]?.short||'Apparato'}${d.name?' «'+d.name+'»':''}`;

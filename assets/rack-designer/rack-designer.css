@@ -592,3 +592,25 @@ kbd{display:inline-block;min-width:20px;padding:1px 6px;border:1px solid var(--l
 .bk-banner{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:70;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--pannello);border:1px solid var(--linea2);border-left:4px solid var(--warn);border-radius:.7rem;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:10px 12px;max-width:calc(100vw - 24px);font-size:14px}
 .bk-banner span{margin-right:6px}
 .grid2 .f,.grid3 .f{align-items:stretch}
+/* note sulla planimetria */
+.anns{position:absolute;left:0;top:0;width:100%;height:100%;z-index:1;pointer-events:none;overflow:visible}
+.anns .an-hit,.anns .an-h{pointer-events:auto;cursor:move}
+.anns.ro .an-hit{pointer-events:none}
+.an-t{paint-order:stroke;stroke:rgba(255,255,255,.92);stroke-width:.25em;stroke-linejoin:round;font-weight:600;font-family:"Source Sans 3",sans-serif}
+.an.on .an-hit{filter:drop-shadow(0 0 3px var(--accento))}
+.an-h{fill:#fff;stroke:var(--accento);stroke-width:3;vector-effect:non-scaling-stroke}
+.an-sw{display:inline-flex;gap:4px;vertical-align:middle;margin:0 6px}
+.an-sw i{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid var(--pannello);box-shadow:0 0 0 1px var(--linea2)}
+.an-sw i.on{box-shadow:0 0 0 2px var(--accento)}
+#annHint select{height:28px;border:1px solid var(--linea2);border-radius:.375rem;background:var(--pannello2);color:inherit;margin:0 4px}
+/* guida introduttiva */
+.tour{position:fixed;inset:0;z-index:95;pointer-events:auto}
+.tour-hole{position:fixed;border-radius:.6rem;box-shadow:0 0 0 9999px rgba(10,12,15,.55);outline:2px solid var(--accento);transition:all .2s;pointer-events:none}
+.tour-hole[hidden]{display:block!important;width:0;height:0;left:50%;top:50%}
+.tour-box{position:fixed;background:var(--pannello);color:var(--testo);border-radius:.8rem;box-shadow:0 20px 60px rgba(0,0,0,.35);padding:16px 18px}
+.tour-box h3{margin:2px 0 6px;color:var(--titoli);font-size:17px}
+.tour-box p{margin:0 0 12px;line-height:1.5;font-size:14.5px}
+.tour-n{font-size:12px;color:var(--tenue)}
+/* spazio nel browser e avviso Safari */
+.st-bar i{background:var(--accento)}.st-bar.hot i{background:var(--err)}
+.sa-banner{bottom:76px;border-left-color:var(--info)}

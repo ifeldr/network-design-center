@@ -96,7 +96,7 @@ function drawField(){
   }else if(FS.scr==='plan'){
     const pl=planById(FS.plan);if(!pl){FS.scr='home';return drawField()}
     body=`<div class="fc-top"><button class="fc-back" data-fc="home">${ICB}</button><b class="grow">${esc(pl.name)}</b>${FS.moving||FS.adding?`<span class="fc-mv">${FS.adding?'Tocca dove si trova':'Tocca la nuova posizione'}</span><button class="fc-x" data-fc="mvEnd">Annulla</button>`:'<button class="fc-x" data-fc="add">+ In più</button>'}</div>
-    <div class="fc-vp" id="fcVp"><div class="fc-in" id="fcIn" style="width:${pl.w}px;height:${pl.h}px"><img id="fcImg" alt="" draggable="false">
+    <div class="fc-vp" id="fcVp"><div class="fc-in" id="fcIn" style="width:${pl.w}px;height:${pl.h}px"><img id="fcImg" alt="" draggable="false">${window.NDC_notes?.svgFor(pl,true)||''}
       ${P.racks.filter(r=>r.loc&&r.loc.plan===pl.id).map(r=>`<div class="fc-mk fc-rk" data-fr="${r.id}" style="left:${r.loc.x}px;top:${r.loc.y}px">${esc(rid(r,true))}</div>`).join('')}
       ${planTargets(pl).map(({k,d})=>{const i=info(k);const lb=devLabel(d);return `<div class="fc-mk fc-d k-${d.kind} s-${stOf(k)} ${FS.sel===k?'sel':''}" data-fk="${k}" style="left:${d.x}px;top:${d.y}px"><i></i>${lb||d.name?`<span>${esc(d.kind==='to'?(lb?lb.split('.').pop():d.name):(d.name||lb.split('.').pop()))}</span>`:''}</div>`}).join('')}
       ${Object.entries(P.fieldNew||{}).filter(([,n])=>n.plan===pl.id&&!n.del&&!n.done).map(([k,n])=>`<div class="fc-mk fc-d fc-new k-${n.kind||'to'} ${FS.sel===k?'sel':''}" data-fk="${k}" style="left:${n.x}px;top:${n.y}px"><i></i><span>+</span></div>`).join('')}

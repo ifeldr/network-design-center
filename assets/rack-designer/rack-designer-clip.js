@@ -129,7 +129,7 @@ function openBackup(){
     <div class="f"><label>Ogni (minuti, se ci sono modifiche)</label><input type="number" min="5" max="1440" data-bks="every" value="${s.every}"></div>
     <div class="f"><label>Promemoria dopo (giorni)</label><input type="number" min="1" max="90" data-bks="remind" value="${s.remind}"></div></div>
     <label class="chk"><input type="checkbox" data-bks="images" ${s.images?'checked':''}><span>Includi planimetrie e foto (backup più grande)</span></label>
-    <p class="piccola">Con GitHub Gist il backup viene aggiornato in un gist segreto${s.gistId?` (<a href="https://gist.github.com/${esc(s.gistId)}" target="_blank" rel="noopener">apri</a>)`:''} quando ci sono modifiche, anche quando chiudi la scheda. ${has?'':'Per usarlo inserisci il token in menu ⋯ → «Salva o apri da GitHub Gist».'} Senza Gist ricevi un promemoria quando l'ultimo backup è più vecchio dei giorni indicati.</p></div>`);
+    <p class="piccola">Con GitHub Gist il backup viene aggiornato in un gist segreto${s.gistId?` (<a href="https://gist.github.com/${esc(s.gistId)}" target="_blank" rel="noopener">apri</a>)`:''} quando ci sono modifiche, anche quando chiudi la scheda. ${has?'':'Per usarlo inserisci il token in menu ⋯ → «Salva o apri da GitHub Gist».'} Senza Gist ricevi un promemoria quando l'ultimo backup è più vecchio dei giorni indicati.</p></div><div id="bkStore"></div>`);window.NDC_care?.fillStore();
 }
 document.addEventListener('change',e=>{const k=e.target.dataset?.bks;if(!k)return;const s=bset();s[k]=e.target.type==='checkbox'?e.target.checked:e.target.type==='number'?Math.max(1,+e.target.value||1):e.target.value;bsave(s);if(k==='mode'&&s.mode==='gist')backupGist(false)});
 /* ripristino */

@@ -12,7 +12,7 @@ dal telefono e alla relazione finale in PDF.
 ## Indice
 
 1. [Come funziona](#come-funziona)
-2. [Primi passi](#primi-passi)
+2. [Primi passi e guida introduttiva](#primi-passi-e-guida-introduttiva)
 3. [Vista Armadio](#vista-armadio)
 4. [Catalogo modelli](#catalogo-modelli)
 5. [Vista Planimetria](#vista-planimetria)
@@ -50,7 +50,13 @@ browser e i dati restano sul dispositivo.
 - Stile e colori sono quelli del sito principale (tema Chirpy, carattere Source Sans 3), con modalità
   chiara e scura.
 
-## Primi passi
+## Primi passi e guida introduttiva
+
+Al primo avvio su computer parte una **guida introduttiva** di nove passaggi che evidenzia le parti
+principali della pagina (viste, libreria, auto-organizza, conformità, planimetria, progetti, ricerca,
+menu). Si scorre con Avanti/Indietro o con le frecce, si chiude con Esc e si rivede da menu ⋯ →
+«Guida introduttiva».
+
 
 1. Apri la pagina: parte un progetto vuoto con un armadio da 24 U.
 2. In **Armadi** scegli un **modello di armadio** (di piano, di edificio, locale) oppure trascina gli
@@ -119,6 +125,13 @@ meno recenti ancora installati.
   canale permanente ISO/IEC 11801), oppure sul **percorso reale** tracciato a mano.
 - **Strumenti**: muri (bloccano il campo visivo e riducono la copertura Wi-Fi), campo visivo delle
   telecamere (direzione, angolo, portata), copertura Wi-Fi indicativa degli access point, righello.
+- **Note sulla planimetria** (pulsante **Note** nella barra in basso): testi, frecce e aree evidenziate
+  («passaggio a soffitto», «zona da non forare»), in sette colori e tre dimensioni.
+  - Testo: clic dove scrivere; freccia: trascina dalla coda alla punta; area: trascina il rettangolo.
+  - Clic su una nota per modificarne testo, colore e dimensione nel pannello a destra, duplicarla o
+    eliminarla; si trascina per spostarla e dai punti bianchi si cambia la forma.
+  - Le note compaiono nel PNG, nella stampa (con l'elenco dei testi), nella relazione e, in sola lettura,
+    nella modalità sopralluogo del telefono; le versioni registrano le modifiche.
 - **Dorsali** tra armadi disegnate in pianta con la lunghezza stimata.
 - Esportazione in **PNG** e stampa con l'elenco degli elementi.
 
@@ -178,7 +191,8 @@ Menu ⋯ → **Archiviazione videosorveglianza**:
 - **Relazione completa** (menu ⋯ → «Relazione completa (PDF)…»), da stampare o salvare in PDF:
   - copertina con committente, autore, oggetto, riepilogo, conformità degli armadi e indice;
   - planimetrie, fogli di armadio, distinta materiali, piano IP, archiviazione videosorveglianza;
-  - avanzamento lavori del sopralluogo e riepilogo delle segnalazioni.
+  - avanzamento lavori del sopralluogo e riepilogo delle segnalazioni;
+  - le note disegnate sulle planimetrie.
 
 ## Esportazioni e integrazioni
 
@@ -260,12 +274,24 @@ Menu ⋯ → **Backup dei progetti…**
 - **Promemoria** quando l'ultimo backup è più vecchio dei giorni scelti (7 di default).
 - **Ripristino** da file o da Gist, come copie o sostituendo i progetti esistenti.
 
+**Protezione dei dati e spazio** (nella stessa finestra, sezione «Spazio nel browser»):
+
+- spazio usato da planimetrie, foto e versioni e da progetti e impostazioni, con avviso quando lo spazio
+  per i progetti è quasi pieno;
+- **archivio persistente**: l'app chiede al browser di non cancellare mai i dati per liberare spazio. Su
+  Chrome ed Edge la richiesta parte da sola appena il progetto ha dei contenuti; su Firefox, che mostra una
+  domanda, si attiva con il pulsante «Proteggi i dati di questo browser». Lo stato (attiva / non attiva) è
+  sempre indicato.
+
+**Safari** (iPhone, iPad, Mac, e ogni browser su iPhone e iPad) può cancellare i dati di un sito che non
+apri per 7 giorni. Se la pagina non è installata come app e il backup automatico non è attivo, compare un
+avviso con le istruzioni: installare la pagina (iPhone e iPad: Condividi → Aggiungi alla schermata Home;
+Mac: File → Aggiungi al Dock, Safari 17 o successivo) e attivare il backup su Gist.
+
 Da sapere:
 
 - ogni browser ha il suo archivio: PC e telefono, o Chrome e Firefox, non condividono i progetti;
-- cancellando i dati del sito o usando la navigazione anonima i progetti si perdono;
-- Safari (iPhone, iPad, Mac) può cancellare i dati di un sito non aperto per 7 giorni: sul telefono
-  conviene installare la pagina come app e tenere attivo il backup.
+- cancellando i dati del sito o usando la navigazione anonima i progetti si perdono.
 
 ## Scorciatoie da tastiera
 
@@ -282,11 +308,12 @@ sistema in uso.
 | Ctrl + C / X / V | ⌘C / ⌘X / ⌘V | copia, taglia, incolla |
 | Ctrl + D | ⌘D | duplica |
 | ↑ ↓ | ↑ ↓ | sposta di 1 U nell'armadio |
-| Frecce (Maiusc: ×10) | Frecce (⇧: ×10) | sposta in pianta di 1 px |
+| Frecce (Maiusc: ×10) | Frecce (⇧: ×10) | sposta in pianta di 1 px (elementi e note) |
 | Ctrl + K oppure / | ⌘K oppure / | ricerca globale |
 | Ctrl + Z / Ctrl + Y (o Ctrl + Maiusc + Z) | ⌘Z / ⌘⇧Z | annulla / ripeti |
 | Rotellina, + / − | Rotellina, + / − | zoom sulla planimetria |
-| Esc | Esc | deseleziona, annulla calibrazione o posizionamento |
+| Esc | Esc | deseleziona, chiude lo strumento Note, annulla calibrazione o posizionamento |
+| ← → , Invio, Esc | ← → , Invio, Esc | nella guida introduttiva: indietro, avanti, chiudi |
 
 ## Lingua / Language
 
@@ -316,6 +343,8 @@ riga (testo italiano → testo inglese).
 | `assets/rack-designer/rack-designer-field.js` | sopralluogo da telefono, importazione sul PC, confronto progetto ↔ realtà |
 | `assets/rack-designer/rack-designer-select.js` | selezione multipla e scorciatoie da tastiera |
 | `assets/rack-designer/rack-designer-clip.js` | copia e incolla, backup e ripristino |
+| `assets/rack-designer/rack-designer-notes.js` | note sulla planimetria (testi, frecce, aree) |
+| `assets/rack-designer/rack-designer-care.js` | archivio persistente, spazio nel browser, avviso Safari, guida introduttiva |
 | `assets/rack-designer/i18n.js` | traduzione in inglese |
 | `assets/rack-designer/vendor/qrcode.js` | qrcode-generator (Kazuhiko Arase, MIT) per i QR |
 | `assets/rack-designer/vendor/pdfjs/` | pdf.js 4.10 (Mozilla, Apache 2.0) per le planimetrie in PDF |
@@ -343,6 +372,7 @@ Lo script avvia un server locale e controlla, in italiano e in inglese:
 - sopralluogo simulato su telefono e importazione sul PC, confronto progetto ↔ realtà;
 - selezione multipla e scorciatoie sia con i tasti di Windows/Linux sia con quelli di macOS;
 - copia e incolla, backup e ripristino;
+- note in planimetria (creazione, eliminazione, presenza nel PNG), spazio e protezione dei dati, guida introduttiva;
 - assenza di testo italiano nella versione inglese e di errori JavaScript.
 
 Lo stesso test gira su GitHub Actions a ogni push (scheda *Actions*); le schermate dell'ultimo test si

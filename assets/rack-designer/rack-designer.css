@@ -240,6 +240,30 @@ main{grid-area:main;position:relative;overflow:hidden;background:var(--tela);bac
 .k-poe{background:#22262a}.k-poe .fc{background:linear-gradient(#2c3035,#22262a);color:#f7c948;font-weight:700;font-size:10.5px}
 .cap{font-size:10px;font-weight:700;white-space:nowrap;opacity:.85}
 
+
+/* ---------- catalogo modelli ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin:0 12px 6px}
+.chip{border:1px solid var(--linea2);background:var(--pannello);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600;color:var(--tenue)}
+.chip:hover{border-color:var(--accento);color:var(--accento)}
+.chip.on{background:var(--accento);border-color:var(--accento);color:#fff}
+.sotto-t{font-size:12.5px;font-weight:600;color:var(--tenue);padding:4px 14px 4px}
+.card.mod{padding:6px 10px;margin-bottom:5px}
+.card.mod b{font-size:14px}
+.brand-t{font-weight:800;font-size:calc(var(--uh) * .32);letter-spacing:.02em;white-space:nowrap;flex:none}
+.p.sf{width:calc(var(--uh) * .34);height:calc(var(--uh) * .24);background:#0b0c0e;box-shadow:none;border:1px solid #9aa1a9}
+.it.v-ubiquiti,.it.v-aruba,.it.v-mikrotik,.it.v-zte{background:#d9dcdf}
+.it.v-hpe{background:#4a4e54}.it.v-cisco{background:#2c333c}.it.v-ruckus{background:#26282b}
+.it.v-ubiquiti .fc{background:linear-gradient(#f5f6f7,#dde0e4);color:#3b82f6}
+.it.v-mikrotik .fc{background:linear-gradient(#f4f4f4,#d8d8d8);color:#c0392b}
+.it.v-aruba .fc{background:linear-gradient(#f3f3f3,#d6d6d6);color:#ff8300}
+.it.v-zte .fc{background:linear-gradient(#eef0f3,#cfd4d9);color:#0066b3}
+.it.v-hpe .fc{background:linear-gradient(#5d6269,#40444a);color:#01a982}
+.it.v-cisco .fc{background:linear-gradient(#3a4350,#262c35);color:#4fc3f7}
+.it.v-ruckus .fc{background:linear-gradient(#35373b,#1f2124);color:#f58025}
+.it.v-ubiquiti .p,.it.v-mikrotik .p,.it.v-aruba .p,.it.v-zte .p{background:#2a2f35;box-shadow:inset 0 -2px 0 #4a525b}
+.it.v-hpe .p,.it.v-cisco .p,.it.v-ruckus .p{background:#0b0c0e;box-shadow:inset 0 -2px 0 #5a6068}
+.it.v-hpe .p.sf,.it.v-cisco .p.sf,.it.v-ruckus .p.sf,.it.v-ubiquiti .p.sf,.it.v-mikrotik .p.sf,.it.v-aruba .p.sf,.it.v-zte .p.sf{background:#0b0c0e;border-color:#9aa1a9;box-shadow:none}
+
 /* ---------- planimetria ---------- */
 .planvp{position:absolute;inset:0;overflow:hidden;cursor:grab;touch-action:none}
 .planvp.pan{cursor:grabbing}

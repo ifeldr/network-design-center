@@ -34,6 +34,16 @@ Nel sito principale la pagina è raggiungibile dal menu **Progetti → Rack Desi
   prese a muro (`BA.FA1.C12`), tratte tra armadi (`ABC.DEF.G`) con marcatura del lato remoto.
 - Foglio di armadio stampabile, topologia CD → BD → FD → LD.
 
+**Catalogo modelli** (scheda *Modelli*, filtro per marca e ricerca)
+- 154 apparati a rack di Ubiquiti, MikroTik, HP/HPE, Aruba, Cisco, ZTE e Ruckus: gateway e firewall,
+  router e OLT, switch, server, NVR e storage, con altezza in U, porte RJ45/SFP e PoE dalle schede tecniche
+  e frontale nei colori della marca.
+- 98 apparati in campo per la planimetria: access point, telecamere, switch da scrivania e ONT.
+- Il modello di un elemento si può cambiare dalla colonna delle proprietà; per i modelli in planimetria
+  il controllo segnala access point e telecamere collegati ad armadi senza switch PoE.
+- Il catalogo è nell'elenco `RACK_MODELS` / `FIELD_MODELS` di `rack-designer.js`: per aggiungere un
+  modello basta una riga.
+
 **Vista Planimetria**
 - Carica la pianta di un piano: PNG, JPG, WebP, SVG o PDF (si sceglie la pagina).
   Ogni planimetria ha edificio e piano, così si collega agli armadi con lo stesso identificativo.

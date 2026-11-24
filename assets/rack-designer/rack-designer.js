@@ -59,7 +59,223 @@ const DEV={
 const TCOL={CD:'#7a4df5',BD:'#0d6efd',FD:'#198754',LD:'#e5822a'};
 const svgI=(k,extra='')=>`<svg viewBox="0 0 24 24" ${extra}>${ICO[k]}</svg>`;
 
-function hOf(it){const p=it.props;switch(it.kind){
+/* ---------------- catalogo modelli per marca ----------------
+   Rack: [marca, modello, tipo, U, porte RJ45, porte SFP/SFP+/QSFP, PoE, nota]
+   In campo: [marca, modello, tipo (ap|cam|altro), nota]
+   Dati dalle schede tecniche dei produttori; per gli apparati modulari si indica la configurazione base. */
+const VENDORS={
+  ubiquiti:{n:'Ubiquiti',logo:'UniFi',c:'#006fff'},
+  mikrotik:{n:'MikroTik',logo:'MikroTik',c:'#d0312d'},
+  hpe:{n:'HP / HPE',logo:'HPE',c:'#01a982'},
+  aruba:{n:'Aruba',logo:'aruba',c:'#ff8300'},
+  cisco:{n:'Cisco',logo:'cisco',c:'#049fd9'},
+  zte:{n:'ZTE',logo:'ZTE',c:'#0066b3'},
+  ruckus:{n:'Ruckus',logo:'RUCKUS',c:'#f58025'}
+};
+const RACK_MODELS=[
+  // Ubiquiti
+  ['ubiquiti','UniFi Dream Machine Pro (UDM-Pro)','fw',1,9,2,false,'gateway / firewall, 8 LAN + WAN'],
+  ['ubiquiti','UniFi Dream Machine SE (UDM-SE)','fw',1,9,2,true,'gateway con 8 porte PoE'],
+  ['ubiquiti','UniFi Dream Machine Pro Max (UDM-Pro-Max)','fw',1,9,2,false,'gateway / firewall'],
+  ['ubiquiti','UniFi Gateway Pro (UXG-Pro)','fw',1,2,2,false,'gateway'],
+  ['ubiquiti','EdgeRouter Infinity (ER-8-XG)','router',1,1,8,false,'router 8× SFP+'],
+  ['ubiquiti','USW-24','sw',1,24,2,false,''],
+  ['ubiquiti','USW-24-PoE','sw',1,24,2,true,'16 porte PoE+'],
+  ['ubiquiti','USW-48','sw',1,48,4,false,''],
+  ['ubiquiti','USW-48-PoE','sw',1,48,4,true,'32 porte PoE+'],
+  ['ubiquiti','USW-16-PoE','sw',1,16,2,true,'8 porte PoE+'],
+  ['ubiquiti','USW-Lite-16-PoE','sw',1,16,0,true,'8 porte PoE+'],
+  ['ubiquiti','USW-Pro-24','sw',1,24,2,false,'uplink SFP+'],
+  ['ubiquiti','USW-Pro-24-PoE','sw',1,24,2,true,'uplink SFP+'],
+  ['ubiquiti','USW-Pro-48','sw',1,48,4,false,'uplink SFP+'],
+  ['ubiquiti','USW-Pro-48-PoE','sw',1,48,4,true,'uplink SFP+'],
+  ['ubiquiti','USW-Pro-Max-24','sw',1,24,2,false,'2,5 GbE + SFP+'],
+  ['ubiquiti','USW-Pro-Max-24-PoE','sw',1,24,2,true,'2,5 GbE + SFP+'],
+  ['ubiquiti','USW-Pro-Max-48-PoE','sw',1,48,4,true,'2,5 GbE + SFP+'],
+  ['ubiquiti','USW-Enterprise-24-PoE','sw',1,24,2,true,'2,5 GbE + SFP+'],
+  ['ubiquiti','USW-Enterprise-48-PoE','sw',1,48,4,true,'2,5 GbE + SFP+'],
+  ['ubiquiti','USW-EnterpriseXG-24','sw',1,24,2,false,'10 GbE + SFP28'],
+  ['ubiquiti','USW-Aggregation','sw',1,0,8,false,'8× SFP+'],
+  ['ubiquiti','USW-Pro-Aggregation','sw',1,0,32,false,'28× SFP+ + 4× SFP28'],
+  ['ubiquiti','EdgeSwitch 24 250W (ES-24-250W)','sw',1,24,2,true,''],
+  ['ubiquiti','EdgeSwitch 48 500W (ES-48-500W)','sw',1,48,4,true,''],
+  ['ubiquiti','UniFi NVR (UNVR)','srv',1,1,1,false,'NVR 4 dischi'],
+  ['ubiquiti','UniFi NVR Pro (UNVR-Pro)','srv',2,1,1,false,'NVR 7 dischi'],
+  ['ubiquiti','UniFi Patch Panel 24 (UACC-Rack-Panel-Patch-24)','patch',1,24,0,false,'patch panel Cat 6'],
+  // MikroTik
+  ['mikrotik','CCR2004-16G-2S+','router',1,16,2,false,'Cloud Core Router'],
+  ['mikrotik','CCR2004-1G-12S+2XS','router',1,1,14,false,'12× SFP+ + 2× SFP28'],
+  ['mikrotik','CCR2116-12G-4S+','router',1,13,4,false,'Cloud Core Router'],
+  ['mikrotik','CCR2216-1G-12XS-2XQ','router',1,1,14,false,'12× SFP28 + 2× QSFP28'],
+  ['mikrotik','CCR1036-8G-2S+','router',1,8,2,false,'Cloud Core Router'],
+  ['mikrotik','CCR1009-7G-1C-1S+','router',1,8,2,false,'Cloud Core Router'],
+  ['mikrotik','RB4011iGS+RM','router',1,10,1,false,'RouterBOARD'],
+  ['mikrotik','RB1100AHx4','router',1,13,0,false,'RouterBOARD'],
+  ['mikrotik','RB5009UG+S+IN','router',1,8,1,false,'da tavolo, a rack con kit'],
+  ['mikrotik','CRS326-24G-2S+RM','sw',1,24,2,false,'Cloud Router Switch'],
+  ['mikrotik','CRS328-24P-4S+RM','sw',1,24,4,true,'24 porte PoE'],
+  ['mikrotik','CRS320-8P-8B-4S+RM','sw',1,16,4,true,'8 PoE+ e 8 PoE-bt'],
+  ['mikrotik','CRS354-48G-4S+2Q+RM','sw',1,48,6,false,'4× SFP+ + 2× QSFP+'],
+  ['mikrotik','CRS354-48P-4S+2Q+RM','sw',1,48,6,true,'4× SFP+ + 2× QSFP+'],
+  ['mikrotik','CRS317-1G-16S+RM','sw',1,1,16,false,'16× SFP+'],
+  ['mikrotik','CRS326-24S+2Q+RM','sw',1,1,26,false,'24× SFP+ + 2× QSFP+'],
+  ['mikrotik','CRS518-16XS-2XQ-RM','sw',1,1,18,false,'16× SFP28 + 2× QSFP28'],
+  ['mikrotik','CRS510-8XS-2XQ-IN','sw',1,1,10,false,'8× SFP28 + 2× QSFP28'],
+  ['mikrotik','CRS309-1G-8S+IN','sw',1,1,8,false,'8× SFP+, a rack con kit'],
+  ['mikrotik','CSS326-24G-2S+RM','sw',1,24,2,false,'SwOS'],
+  // HP / HPE
+  ['hpe','OfficeConnect 1820 24G (J9980A)','sw',1,24,2,false,''],
+  ['hpe','OfficeConnect 1820 48G (J9981A)','sw',1,48,4,false,''],
+  ['hpe','OfficeConnect 1820 24G PoE+ (J9983A)','sw',1,24,2,true,'12 porte PoE+'],
+  ['hpe','OfficeConnect 1920S 24G 2SFP (JL381A)','sw',1,24,2,false,''],
+  ['hpe','OfficeConnect 1920S 48G 4SFP (JL382A)','sw',1,48,4,false,''],
+  ['hpe','OfficeConnect 1920S 24G 2SFP PoE+ 370W (JL385A)','sw',1,24,2,true,''],
+  ['hpe','OfficeConnect 1920S 48G 4SFP PoE+ 370W (JL386A)','sw',1,48,4,true,''],
+  ['hpe','OfficeConnect 1950 24G 2SFP+ 2XGT (JG960A)','sw',1,26,2,false,''],
+  ['hpe','OfficeConnect 1950 48G 2SFP+ 2XGT (JG961A)','sw',1,50,2,false,''],
+  ['hpe','HP 2530-24G (J9776A)','sw',1,24,4,false,''],
+  ['hpe','HP 2530-48G (J9775A)','sw',1,48,4,false,''],
+  ['hpe','HP 2530-24G-PoE+ (J9773A)','sw',1,24,4,true,''],
+  ['hpe','HP 2530-48G-PoE+ (J9772A)','sw',1,48,4,true,''],
+  ['hpe','FlexNetwork 5130 24G 4SFP+ EI (JG932A)','sw',1,24,4,false,''],
+  ['hpe','FlexNetwork 5130 48G 4SFP+ EI (JG934A)','sw',1,48,4,false,''],
+  ['hpe','ProLiant DL20 Gen10 Plus','srv',1,2,0,false,'server'],
+  ['hpe','ProLiant DL360 Gen10','srv',1,4,0,false,'server'],
+  ['hpe','ProLiant DL380 Gen10','srv',2,4,0,false,'server'],
+  ['hpe','ProLiant DL360 Gen11','srv',1,4,0,false,'server'],
+  ['hpe','ProLiant DL380 Gen11','srv',2,4,0,false,'server'],
+  ['hpe','MSA 2060','srv',2,0,4,false,'storage SAN'],
+  // Aruba
+  ['aruba','2930F 24G 4SFP+ (JL253A)','sw',1,24,4,false,''],
+  ['aruba','2930F 48G 4SFP+ (JL254A)','sw',1,48,4,false,''],
+  ['aruba','2930F 24G PoE+ 4SFP+ (JL255A)','sw',1,24,4,true,''],
+  ['aruba','2930F 48G PoE+ 4SFP+ (JL256A)','sw',1,48,4,true,''],
+  ['aruba','CX 6100 24G 4SFP+ (JL678A)','sw',1,24,4,false,''],
+  ['aruba','CX 6100 48G 4SFP+ (JL676A)','sw',1,48,4,false,''],
+  ['aruba','CX 6100 24G Class4 PoE 4SFP+ (JL677A)','sw',1,24,4,true,''],
+  ['aruba','CX 6100 48G Class4 PoE 4SFP+ (JL675A)','sw',1,48,4,true,''],
+  ['aruba','CX 6200F 24G 4SFP+ (JL724A)','sw',1,24,4,false,''],
+  ['aruba','CX 6200F 48G 4SFP+ (JL726A)','sw',1,48,4,false,''],
+  ['aruba','CX 6200F 24G Class4 PoE 4SFP+ (JL725A)','sw',1,24,4,true,''],
+  ['aruba','CX 6200F 48G Class4 PoE 4SFP+ (JL727A)','sw',1,48,4,true,''],
+  ['aruba','CX 6300M 48G 4SFP56','sw',1,48,4,false,''],
+  ['aruba','Instant On 1830 24G 2SFP (JL812A)','sw',1,24,2,false,''],
+  ['aruba','Instant On 1830 24G 12p PoE 2SFP (JL813A)','sw',1,24,2,true,''],
+  ['aruba','Instant On 1830 48G 4SFP (JL814A)','sw',1,48,4,false,''],
+  ['aruba','Instant On 1830 48G 24p PoE 4SFP (JL815A)','sw',1,48,4,true,''],
+  ['aruba','Instant On 1930 24G 4SFP+ (JL682A)','sw',1,24,4,false,''],
+  ['aruba','Instant On 1930 24G PoE 195W 4SFP+ (JL683A)','sw',1,24,4,true,''],
+  ['aruba','Instant On 1930 24G PoE 370W 4SFP+ (JL684A)','sw',1,24,4,true,''],
+  ['aruba','Instant On 1930 48G 4SFP+ (JL685A)','sw',1,48,4,false,''],
+  ['aruba','Instant On 1930 48G PoE 370W 4SFP+ (JL686A)','sw',1,48,4,true,''],
+  ['aruba','Instant On 1960 24G 2XGT 2SFP+ (JL806A)','sw',1,26,2,false,''],
+  ['aruba','Instant On 1960 24G PoE 2XGT 2SFP+ (JL807A)','sw',1,26,2,true,''],
+  ['aruba','Instant On 1960 48G 2XGT 2SFP+ (JL808A)','sw',1,50,2,false,''],
+  ['aruba','Instant On 1960 48G PoE 2XGT 2SFP+ (JL809A)','sw',1,50,2,true,''],
+  // Cisco
+  ['cisco','Catalyst 1000-24T-4G-L','sw',1,24,4,false,''],
+  ['cisco','Catalyst 1000-48T-4G-L','sw',1,48,4,false,''],
+  ['cisco','Catalyst 1000-24P-4G-L','sw',1,24,4,true,''],
+  ['cisco','Catalyst 1000-48P-4G-L','sw',1,48,4,true,''],
+  ['cisco','Catalyst 1000-24T-4X-L','sw',1,24,4,false,'uplink SFP+'],
+  ['cisco','Catalyst 2960X-24TS-L','sw',1,24,4,false,''],
+  ['cisco','Catalyst 2960X-48TS-L','sw',1,48,4,false,''],
+  ['cisco','Catalyst 2960X-24PS-L','sw',1,24,4,true,''],
+  ['cisco','Catalyst 2960X-48FPS-L','sw',1,48,4,true,''],
+  ['cisco','Catalyst 9200L-24T-4G','sw',1,24,4,false,''],
+  ['cisco','Catalyst 9200L-48T-4G','sw',1,48,4,false,''],
+  ['cisco','Catalyst 9200L-24P-4G','sw',1,24,4,true,''],
+  ['cisco','Catalyst 9200L-48P-4G','sw',1,48,4,true,''],
+  ['cisco','Catalyst 9200L-48P-4X','sw',1,48,4,true,'uplink SFP+'],
+  ['cisco','Catalyst 9300-24P','sw',1,24,4,true,'modulo di rete 4× SFP+'],
+  ['cisco','Catalyst 9300-48P','sw',1,48,4,true,'modulo di rete 4× SFP+'],
+  ['cisco','Catalyst 9300-48U','sw',1,48,4,true,'UPOE, modulo 4× SFP+'],
+  ['cisco','Catalyst 9500-24Y4C','sw',1,0,28,false,'24× SFP28 + 4× QSFP28'],
+  ['cisco','Business CBS250-24T-4G','sw',1,24,4,false,''],
+  ['cisco','Business CBS350-24T-4G','sw',1,24,4,false,''],
+  ['cisco','Business CBS350-48T-4G','sw',1,48,4,false,''],
+  ['cisco','Business CBS350-24P-4G','sw',1,24,4,true,''],
+  ['cisco','Business CBS350-48P-4G','sw',1,48,4,true,''],
+  ['cisco','Meraki MS120-24P','sw',1,24,4,true,''],
+  ['cisco','Meraki MS120-48LP','sw',1,48,4,true,''],
+  ['cisco','Meraki MS225-48FP','sw',1,48,4,true,'uplink SFP+'],
+  ['cisco','Meraki MS250-48FP','sw',1,48,4,true,'uplink SFP+'],
+  ['cisco','ISR 4331','router',1,3,0,false,'router a servizi integrati'],
+  ['cisco','ISR 4431','router',1,4,0,false,'router a servizi integrati'],
+  ['cisco','Catalyst 8200-1N-4T','router',1,4,0,false,'edge router'],
+  ['cisco','Firepower 1120','fw',1,8,4,false,'firewall'],
+  ['cisco','Firepower 1140','fw',1,8,4,false,'firewall'],
+  ['cisco','Secure Firewall 3105','fw',1,8,8,false,'firewall'],
+  ['cisco','ASA 5525-X','fw',1,8,0,false,'firewall'],
+  ['cisco','UCS C220 M5','srv',1,2,0,false,'server'],
+  ['cisco','UCS C240 M5','srv',2,2,0,false,'server'],
+  // ZTE
+  ['zte','ZXR10 5260-28TD-H','sw',1,24,4,false,''],
+  ['zte','ZXR10 5260-28PD-H','sw',1,24,4,true,''],
+  ['zte','ZXR10 5260-52TD-H','sw',1,48,4,false,''],
+  ['zte','ZXR10 5260-52PD-H','sw',1,48,4,true,''],
+  ['zte','ZXR10 5950-28TD-L','sw',1,24,4,false,''],
+  ['zte','ZXR10 5950-28PD-L','sw',1,24,4,true,''],
+  ['zte','ZXR10 5950-52TD-L','sw',1,48,4,false,''],
+  ['zte','ZXR10 5950-52PD-L','sw',1,48,4,true,''],
+  ['zte','ZXR10 5960-52DU-H','sw',1,0,52,false,'48× SFP+ + 4× QSFP28'],
+  ['zte','ZXA10 C320','router',2,1,2,false,'OLT GPON compatta'],
+  ['zte','ZXA10 C620','router',2,0,4,false,'OLT GPON / XGS-PON'],
+  ['zte','ZXA10 C600','router',11,0,8,false,'OLT ad alta capacità'],
+  // Ruckus
+  ['ruckus','ICX 7150-24','sw',1,26,4,false,'24 + 2 uplink RJ45'],
+  ['ruckus','ICX 7150-24P','sw',1,26,4,true,'24 + 2 uplink RJ45'],
+  ['ruckus','ICX 7150-48','sw',1,50,4,false,'48 + 2 uplink RJ45'],
+  ['ruckus','ICX 7150-48P','sw',1,50,4,true,'48 + 2 uplink RJ45'],
+  ['ruckus','ICX 7150-48ZP','sw',1,48,8,true,'multigigabit PoE'],
+  ['ruckus','ICX 8200-24','sw',1,24,4,false,'uplink SFP28'],
+  ['ruckus','ICX 8200-24P','sw',1,24,4,true,'uplink SFP28'],
+  ['ruckus','ICX 8200-24ZP','sw',1,24,4,true,'2,5 GbE PoE++'],
+  ['ruckus','ICX 8200-48','sw',1,48,4,false,'uplink SFP28'],
+  ['ruckus','ICX 8200-48P','sw',1,48,4,true,'uplink SFP28'],
+  ['ruckus','SmartZone 144 (SZ-144)','srv',1,4,2,false,'controller Wi-Fi']
+];
+const FIELD_MODELS=[
+  // Ubiquiti — access point
+  ['ubiquiti','U7 Pro','ap','Wi-Fi 7'],['ubiquiti','U7 Pro Max','ap','Wi-Fi 7'],['ubiquiti','U7 Pro Wall','ap','Wi-Fi 7 a parete'],['ubiquiti','U7 Outdoor','ap','Wi-Fi 7 esterno'],
+  ['ubiquiti','U6+','ap','Wi-Fi 6'],['ubiquiti','U6 Lite','ap','Wi-Fi 6'],['ubiquiti','U6 Pro','ap','Wi-Fi 6'],['ubiquiti','U6 Long-Range','ap','Wi-Fi 6'],['ubiquiti','U6 Enterprise','ap','Wi-Fi 6E'],
+  ['ubiquiti','U6 Mesh','ap','Wi-Fi 6 interno/esterno'],['ubiquiti','U6 In-Wall','ap','Wi-Fi 6 a parete'],['ubiquiti','U6 Enterprise In-Wall','ap','Wi-Fi 6E a parete'],
+  ['ubiquiti','UAP-AC-Lite','ap','Wi-Fi 5'],['ubiquiti','UAP-AC-LR','ap','Wi-Fi 5'],['ubiquiti','UAP-AC-Pro','ap','Wi-Fi 5'],['ubiquiti','UAP-AC-HD','ap','Wi-Fi 5'],['ubiquiti','UAP-nanoHD','ap','Wi-Fi 5'],['ubiquiti','UAP-AC-M','ap','Wi-Fi 5 mesh'],
+  // Ubiquiti — telecamere e altro
+  ['ubiquiti','G5 Bullet','cam','UniFi Protect'],['ubiquiti','G5 Dome','cam','UniFi Protect'],['ubiquiti','G5 Turret Ultra','cam','UniFi Protect'],['ubiquiti','G5 Flex','cam','UniFi Protect'],['ubiquiti','G5 Pro','cam','UniFi Protect'],
+  ['ubiquiti','G4 Pro','cam','UniFi Protect'],['ubiquiti','G4 Bullet','cam','UniFi Protect'],['ubiquiti','G4 Dome','cam','UniFi Protect'],['ubiquiti','AI Pro','cam','UniFi Protect'],['ubiquiti','AI 360','cam','UniFi Protect fisheye'],['ubiquiti','AI Bullet','cam','UniFi Protect'],
+  ['ubiquiti','G4 Doorbell Pro PoE','cam','videocitofono'],
+  ['ubiquiti','USW-Flex-Mini','altro','switch 5 porte da scrivania'],['ubiquiti','USW-Flex','altro','switch PoE 5 porte'],['ubiquiti','USW-Lite-8-PoE','altro','switch 8 porte PoE'],
+  // MikroTik
+  ['mikrotik','cAP ax','ap','Wi-Fi 6 a soffitto'],['mikrotik','cAP ac','ap','Wi-Fi 5 a soffitto'],['mikrotik','cAP XL ac','ap','Wi-Fi 5 a soffitto'],['mikrotik','wAP ax','ap','Wi-Fi 6 interno/esterno'],['mikrotik','wAP ac','ap','Wi-Fi 5 esterno'],
+  ['mikrotik','hAP ax²','ap','router Wi-Fi 6'],['mikrotik','hAP ax³','ap','router Wi-Fi 6'],['mikrotik','hEX (RB750Gr3)','altro','router 5 porte'],['mikrotik','CRS305-1G-4S+IN','altro','switch 4× SFP+ da tavolo'],
+  // Aruba / HPE
+  ['aruba','AP-303','ap','Wi-Fi 5'],['aruba','AP-505','ap','Wi-Fi 6'],['aruba','AP-515','ap','Wi-Fi 6'],['aruba','AP-535','ap','Wi-Fi 6'],['aruba','AP-503H','ap','Wi-Fi 6 a parete'],
+  ['aruba','AP-635','ap','Wi-Fi 6E'],['aruba','AP-655','ap','Wi-Fi 6E'],['aruba','AP-735','ap','Wi-Fi 7'],
+  ['aruba','Instant On AP11','ap','Wi-Fi 5'],['aruba','Instant On AP15','ap','Wi-Fi 5'],['aruba','Instant On AP22','ap','Wi-Fi 6'],['aruba','Instant On AP25','ap','Wi-Fi 6'],['aruba','Instant On AP32','ap','Wi-Fi 6E'],['aruba','Instant On AP27','ap','Wi-Fi 6 esterno'],
+  ['hpe','Aruba Instant On AP22 (HPE)','ap','Wi-Fi 6'],
+  // Cisco
+  ['cisco','Catalyst 9105AXI','ap','Wi-Fi 6'],['cisco','Catalyst 9115AXI','ap','Wi-Fi 6'],['cisco','Catalyst 9120AXI','ap','Wi-Fi 6'],['cisco','Catalyst 9130AXI','ap','Wi-Fi 6'],['cisco','Catalyst 9136I','ap','Wi-Fi 6E'],
+  ['cisco','CW9162I','ap','Wi-Fi 6E'],['cisco','CW9164I','ap','Wi-Fi 6E'],['cisco','CW9166I','ap','Wi-Fi 6E'],['cisco','CW9172I','ap','Wi-Fi 7'],['cisco','CW9176I','ap','Wi-Fi 7'],
+  ['cisco','Meraki MR36','ap','Wi-Fi 6'],['cisco','Meraki MR44','ap','Wi-Fi 6'],['cisco','Meraki MR46','ap','Wi-Fi 6'],['cisco','Meraki MR56','ap','Wi-Fi 6'],['cisco','Meraki MR57','ap','Wi-Fi 6E'],
+  ['cisco','Aironet 1832I','ap','Wi-Fi 5'],['cisco','Aironet 2802I','ap','Wi-Fi 5'],['cisco','Aironet 3802I','ap','Wi-Fi 5'],['cisco','Business CBW240AC','ap','Wi-Fi 5'],['cisco','Business CBW150AX','ap','Wi-Fi 6'],
+  ['cisco','Meraki MV12','cam','telecamera cloud'],['cisco','Meraki MV22','cam','telecamera cloud'],['cisco','Meraki MV32','cam','fisheye cloud'],['cisco','Meraki MV63','cam','esterno cloud'],['cisco','Meraki MV72','cam','esterno cloud'],
+  // Ruckus
+  ['ruckus','R350','ap','Wi-Fi 6'],['ruckus','R550','ap','Wi-Fi 6'],['ruckus','R650','ap','Wi-Fi 6'],['ruckus','R750','ap','Wi-Fi 6'],['ruckus','R850','ap','Wi-Fi 6'],
+  ['ruckus','R560','ap','Wi-Fi 6E'],['ruckus','R670','ap','Wi-Fi 7'],['ruckus','R770','ap','Wi-Fi 7'],['ruckus','H350','ap','Wi-Fi 6 a parete'],['ruckus','H550','ap','Wi-Fi 6 a parete'],['ruckus','T350c','ap','Wi-Fi 6 esterno'],['ruckus','T750','ap','Wi-Fi 6 esterno'],
+  // ZTE
+  ['zte','ZXHN F6640','altro','ONT fibra Wi-Fi 6'],['zte','ZXHN F680','altro','ONT fibra Wi-Fi 5'],['zte','ZXHN H3600','altro','router Wi-Fi 6'],['zte','ZXHN H388X','altro','router FWA']
+];
+const mslug=s=>s.normalize('NFKD').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const MODELS={};
+RACK_MODELS.forEach(([v,m,k,h,rj,sfp,poe,note])=>{const id=v+'-'+mslug(m);MODELS[id]={id,v,m,k,h,rj,sfp,poe,note,rack:true}});
+FIELD_MODELS.forEach(([v,m,k,note])=>{const id='f-'+v+'-'+mslug(m);MODELS[id]={id,v,m,k,note,rack:false}});
+const mName=m=>`${VENDORS[m.v].n.split(' / ')[0]} ${m.m}`;
+const mSpec=m=>m.rack?[`${m.h} U`,m.rj?`${m.rj} RJ45`:'',m.sfp?`${m.sfp} SFP`:'',m.poe?'PoE':''].filter(Boolean).join(' · '):m.note;
+function mkModelItem(id,pos=1){const m=MODELS[id];const it=mkItem(m.k,pos,m.k==='patch'?{ports:m.rj,model:id}:{ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:id},{name:mName(m)});it.h=hOf(it);return it}
+
+
+function hOf(it){const p=it.props;if(p.model&&MODELS[p.model])return MODELS[p.model].h;switch(it.kind){
   case 'patch':return +p.ports>24?2:1;
   case 'blank':return +p.size||1;
   case 'shelf':return Math.ceil(+p.real||1);
@@ -72,7 +288,7 @@ const nm=it=>it.name||KINDS[it.kind].name;
 
 /* ---------------- stato ---------------- */
 let P=null;
-const S={view:'rack',rack:null,item:null,port:null,plan:null,mk:null,leftR:'lib',leftP:'el',right:'props',hist:[],fut:[],uh:26,legend:true,q:'',pz:{},calib:null,placing:null,serve:'auto',labels:true};
+const S={view:'rack',rack:null,item:null,port:null,plan:null,mk:null,leftR:'lib',leftP:'el',right:'props',hist:[],fut:[],uh:26,legend:true,q:'',pz:{},calib:null,placing:null,serve:'auto',labels:true,vend:'all',mqR:'',mqP:''};
 function newRack(o={}){return {id:uid(),type:'FD',b:'A',x:'A',auto:true,floor:0,units:24,server:false,techRoom:true,lock:true,outdoor:false,sealed:false,numbered:true,strip:false,evolution:false,hasLocals:false,note:'',items:[],loc:null,...o}}
 function normalize(p){p.plans??=[];p.devices??=[];p.slack??=6;p.cables??=true;p.racks.forEach(r=>{r.loc??=null});return p}
 const R=()=>P.racks.find(r=>r.id===S.rack)||P.racks[0];
@@ -225,7 +441,9 @@ function validatePlan(pl){
     const ci=cableInfo(d);
     if(ci.st==='err')add('err','ISO/IEC 11801',`${lab}: cavo stimato ${ci.txt}, oltre i 90 m del canale permanente. Servire la presa da un armadio più vicino.`,id);
     else if(ci.st==='warn')add('warn','ISO/IEC 11801',`${lab}: cavo stimato ${ci.txt}, vicino al limite di 90 m.`,id);
-    const r=devPort(d).r;if(r.type!=='CD'&&(r.b!==pl.b))add('warn','Topologia',`${lab} è servita da ${rid(r)}, che si trova in un altro edificio.`,id);
+    const r=devPort(d).r;
+    if((d.kind==='ap'||d.kind==='cam')&&!r.items.some(i=>(i.kind==='sw'&&i.props.poe)||i.kind==='poe'))add('warn','Alimentazione PoE',`${lab}: ${DEV[d.kind].short.toLowerCase()} da alimentare in PoE, ma in ${rid(r)} non c'è uno switch PoE né una barra PoE.`,id);
+    if(r.type!=='CD'&&(r.b!==pl.b))add('warn','Topologia',`${lab} è servita da ${rid(r)}, che si trova in un altro edificio.`,id);
   });
   P.racks.forEach(r=>{
     if(r.loc&&r.loc.plan===pl.id&&(r.type!=='CD'&&(r.b!==pl.b||+r.floor!==+pl.floor)))add('warn','Identificazione armadi',`${rid(r)} è posizionato su questa planimetria (edificio ${pl.b}, piano ${pl.floor}) ma il suo identificativo indica edificio ${r.b}, piano ${r.floor}.`,'rk:'+r.id);
@@ -288,6 +506,11 @@ function portsHtml(n,{rows=1,cls='p',group=6,marks,style=''}={}){
 }
 function faceHtml(it,letter){
   const p=it.props;let fc='',extra='';
+  const md=p.model&&MODELS[p.model];
+  if(md&&it.kind!=='patch'){const V=VENDORS[md.v];
+    if(it.kind==='srv')fc=`<span class="brand-t">${esc(V.logo)}</span><div class="bays">${'<i></i>'.repeat(md.h>1?12:6)}</div><i class="led"></i>`;
+    else{const many=md.sfp>8;fc=`<span class="brand-t">${esc(V.logo)}</span><span style="flex:1"></span>${md.rj?portsHtml(md.rj,{rows:md.rj>28?2:1}):''}${md.sfp?(many?portsHtml(md.sfp,{rows:2,cls:'p sf',group:4}):`<span style="display:flex;gap:2px">${'<i class="sfp"></i>'.repeat(md.sfp)}</span>`):''}${md.poe?'<span class="cap">PoE</span>':''}<i class="led"></i>`}
+    return {cls:'k-'+it.kind+' v-'+md.v,html:`<i class="ear"></i><div class="fc">${fc}</div><i class="ear"></i>${letter?`<span class="tag">${letter}</span>`:''}`}}
   const mark=i=>{const d=it.ports[i];return d?d.t==='link'?'lk':d.note?'nt':'':''};
   switch(it.kind){
     case 'fo':{const col=p.fiber==='OS2'?'#f2c200':p.fiber==='OM4'?'#b23bb6':'#19b5c9';
@@ -331,15 +554,16 @@ function curIssues(){return S.view==='rack'?R()._issues:validatePlan(PL())}
 
 /* ---------------- colonna sinistra ---------------- */
 function renderLeft(){
-  const tabs=S.view==='rack'?[['lib','Libreria'],['racks',`Armadi <span class="badge">${P.racks.length}</span>`]]:[['el','Elementi'],['plans',`Planimetrie <span class="badge">${P.plans.length}</span>`]];
+  const tabs=S.view==='rack'?[['lib','Libreria'],['mod','Modelli'],['racks',`Armadi <span class="badge">${P.racks.length}</span>`]]:[['el','Elementi'],['mod','Modelli'],['plans',`Planimetrie <span class="badge">${P.plans.length}</span>`]];
   const cur=S.view==='rack'?S.leftR:S.leftP;
   $('#leftTabs').innerHTML=tabs.map(([k,l])=>`<button class="scheda ${k===cur?'on':''}" data-lt="${k}">${l}</button>`).join('')+`<span class="sp"></span><button class="btn icona trasp solo-sm" data-act="closeLib" aria-label="Chiudi">✕</button>`;
   const el=$('#leftBody');
   if(cur==='lib')el.innerHTML=libHtml();
   else if(cur==='racks')el.innerHTML=racksHtml();
+  else if(cur==='mod')el.innerHTML=modelsHtml(S.view==='rack');
   else if(cur==='el')el.innerHTML=planPaletteHtml();
   else el.innerHTML=plansHtml();
-  if(S._qfocus){const qi=$('#q');if(qi){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length)}}
+  if(S._qfocus){const qi=$('#'+S._qfocus);if(qi){qi.focus();qi.setSelectionRange(qi.value.length,qi.value.length)}}
 }
 function libHtml(){
   const q=S.q.toLowerCase();
@@ -351,6 +575,21 @@ function libHtml(){
     ks.forEach(([k,K])=>{const it=mkItem(k);const f=faceHtml(it);
       h+=`<div class="card" data-kind="${k}" title="Trascina nell'armadio o fai clic per inserire"><div class="row"><b>${K.name}</b><span class="u">${it.h} U</span></div><div class="mini"><div class="it ${f.cls}">${f.html}</div></div></div>`});
   });
+  return h;
+}
+const KLBL={fw:'Firewall e gateway',router:'Router e OLT',sw:'Switch',srv:'Server, NVR e storage',patch:'Patch panel',ap:'Access point',cam:'Telecamere',altro:'Altri apparati'};
+function modelsHtml(rack){
+  const mq=rack?S.mqR:S.mqP;const q=mq.toLowerCase();
+  const list=Object.values(MODELS).filter(m=>m.rack===rack&&(S.vend==='all'||m.v===S.vend)&&(!q||(m.m+' '+VENDORS[m.v].n+' '+(m.note||'')).toLowerCase().includes(q)));
+  let h=`<div class="cerca"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><input id="mq" placeholder="Cerca modello…" value="${esc(mq)}"></div>
+  <div class="chips">${[['all','Tutte'],...Object.entries(VENDORS).map(([k,v])=>[k,v.n])].map(([k,n])=>`<button class="chip ${S.vend===k?'on':''}" data-vend="${k}">${esc(n)}</button>`).join('')}</div>`;
+  if(!rack&&!PL())h+='<p class="nota-sx">Carica una planimetria per posizionare i modelli.</p>';
+  if(!list.length)return h+'<div class="vuoto">Nessun modello trovato.</div>';
+  Object.keys(VENDORS).forEach(v=>{const lv=list.filter(m=>m.v===v);if(!lv.length)return;
+    h+=`<div class="gruppo-t"><span>${esc(VENDORS[v].n)}</span><span>${lv.length} modelli</span></div>`;
+    Object.keys(KLBL).forEach(k=>{const lk=lv.filter(m=>m.k===k);if(!lk.length)return;
+      h+=`<div class="sotto-t">${KLBL[k]}</div>`;
+      lk.forEach(m=>h+=`<div class="card riga mod" data-${rack?'rmodel':'fmodel'}="${m.id}" title="${esc(mName(m))}"><div class="ic" style="background:${VENDORS[m.v].c};width:30px;height:30px">${rack?`<span style="font-size:10px">${m.h}U</span>`:svgI(m.k,'width="16" height="16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"')}</div><div class="tx"><b>${esc(m.m)}</b><small>${esc(mSpec(m))}</small></div></div>`)})});
   return h;
 }
 function racksHtml(){
@@ -373,7 +612,7 @@ function plansHtml(){
 function planPaletteHtml(){
   const pl=PL();
   if(!pl)return `<div class="vuoto">Carica prima una planimetria per posizionare armadi e apparati.<br><br><button class="btn primario" data-act="upload">Carica planimetria</button></div>`;
-  let h=`<div class="gruppo-t"><span>Apparati in campo</span><span>trascina sulla pianta</span></div>`;
+  let h=`<div class="gruppo-t"><span>Apparati in campo</span><span>trascina sulla pianta</span></div><p class="nota-sx">Access point, telecamere e altri apparati di Ubiquiti, MikroTik, Aruba, Cisco, Ruckus e ZTE sono nella scheda <a href="#" data-act="goModels">Modelli</a>.</p>`;
   Object.entries(DEV).forEach(([k,D])=>h+=`<div class="card riga" data-dev="${k}"><div class="ic" style="background:${D.col};width:32px;height:32px">${svgI(k,'width="17" height="17" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"')}</div><div class="tx"><b>${D.name}</b><small>${D.desc}</small></div></div>`);
   const opts=P.racks.filter(r=>r.items.some(i=>i.kind==='patch'));
   h+=`<div class="sez" style="border-bottom:0;padding:8px 14px 4px"><div class="f" style="grid-template-columns:1fr;gap:4px"><label>Armadio che serve le nuove prese</label><select data-serve>${[['auto','Automatico: il più vicino sulla pianta'],...opts.map(r=>[r.id,rid(r)+' · '+TYPES[r.type].it])].map(([v,l])=>`<option value="${v}" ${S.serve===v?'selected':''}>${esc(l)}</option>`).join('')}</select></div></div>`;
@@ -425,7 +664,7 @@ function renderPlan(){
   P.racks.filter(r=>r.loc&&r.loc.plan===pl.id).forEach(r=>{const k='rk:'+r.id;
     mk+=`<div class="mk mk-rack ${S.mk===k?'sel':''} ${bad[k]?'bad':''} ${S.labels?'':'nolbl'}" data-mk="${k}" style="left:${r.loc.x}px;top:${r.loc.y}px" title="${esc(rid(r)+' · '+TYPES[r.type].it)}"><div class="sym" style="background:${TCOL[r.type]}">${svgI('rack')}${esc(rid(r,true))}</div><div class="ml">${esc(rid(r))}<small>${TYPES[r.type].it}</small></div></div>`});
   devs.forEach(d=>{const k='mk:'+d.id;const lab=devLabel(d);
-    mk+=`<div class="mk mk-${d.kind} ${lab?'':'libero'} ${S.mk===k?'sel':''} ${bad[k]?'bad':''} ${S.labels?'':'nolbl'}" data-mk="${k}" style="left:${d.x}px;top:${d.y}px" title="${esc((d.name||DEV[d.kind].short)+(lab?' · '+lab:' · non collegato'))}"><div class="sym">${svgI(d.kind)}</div><div class="ml">${esc(lab||'—')}${d.name?`<small>${esc(d.name)}</small>`:''}</div></div>`});
+    mk+=`<div class="mk mk-${d.kind} ${lab?'':'libero'} ${S.mk===k?'sel':''} ${bad[k]?'bad':''} ${S.labels?'':'nolbl'}" data-mk="${k}" style="left:${d.x}px;top:${d.y}px" title="${esc((d.model&&MODELS[d.model]?mName(MODELS[d.model])+' · ':'')+(d.name||DEV[d.kind].short)+(lab?' · '+lab:' · non collegato'))}"><div class="sym">${svgI(d.kind)}</div><div class="ml">${esc(lab||'—')}${d.name||d.model?`<small>${esc(d.name||MODELS[d.model]?.m||'')}</small>`:''}</div></div>`});
   if(S.calib)S.calib.pts.forEach(p=>mk+=`<i class="calib-pt" style="left:${p.x}px;top:${p.y}px"></i>`);
   const hint=S.calib?`<div class="suggerimento">Scala: clicca ${S.calib.pts.length?'il secondo punto':'il primo di due punti a distanza nota'} · Esc per annullare</div>`:S.placing?`<div class="suggerimento">Clicca sulla pianta per posizionare la presa ${esc(S.placing.lab)} · Esc per annullare</div>`:'';
   pv.innerHTML=`${hint}<div class="planw" id="pw" style="width:${pl.w}px;height:${pl.h}px"><img src="${url}" alt="${esc(pl.name)}" style="opacity:${pl.opacity??1}"><svg class="cavi" viewBox="0 0 ${pl.w} ${pl.h}">${cav}</svg>${mk}</div>`;
@@ -440,8 +679,8 @@ function toImg(cx,cy){const pl=PL();const z=pz(pl);const vp=$('#pv').getBounding
 function centerOn(x,y){const pl=PL();const z=pz(pl);const vp=$('#pv').getBoundingClientRect();z.x=vp.width/2-x*z.k;z.y=vp.height/2-y*z.k;applyPz()}
 function nearestRack(pl,x,y){let best=null,bd=1e18;P.racks.forEach(r=>{if(!r.loc||r.loc.plan!==pl.id||!r.items.some(i=>i.kind==='patch'))return;const d=Math.abs(r.loc.x-x)+Math.abs(r.loc.y-y);if(d<bd){bd=d;best=r}});
   return best||P.racks.find(r=>r.b===pl.b&&+r.floor===+pl.floor&&r.items.some(i=>i.kind==='patch'))||null}
-function addDevice(kind,x,y,port){
-  const pl=PL();const d={id:uid(),kind,plan:pl.id,x:Math.round(x),y:Math.round(y),name:'',rack:null,item:null,port:null};
+function addDevice(kind,x,y,port,model){
+  const pl=PL();const d={id:uid(),kind,plan:pl.id,x:Math.round(x),y:Math.round(y),name:'',rack:null,item:null,port:null,model:model||null};
   if(port){Object.assign(d,port);const r=rackById(port.rack);const it=r.items.find(i=>i.id===port.item);d.name=it.ports[port.port]?.note||''}
   else{const r=S.serve!=='auto'?rackById(S.serve):nearestRack(pl,x,y);if(r){const f=freePorts(r)[0];if(f){d.rack=r.id;d.item=f.it.id;d.port=f.n;d.name=f.note||''}else toast(`Nessuna presa libera nei patch panel di ${rid(r)}`)}}
   mutate(()=>{P.devices.push(d);S.mk='mk:'+d.id;S.right='props'});
@@ -512,16 +751,19 @@ function rackHtml(r){
 function itemHtml(r,it){
   const K=KINDS[it.kind],p=it.props,L=panelLetters(r);
   let props='';
-  switch(it.kind){
+  const md=p.model&&MODELS[p.model];
+  const msel=it.kind!=='patch'||md?`<div class="f"><label>Modello</label><select data-f="model"><option value="">Generico</option>${Object.keys(VENDORS).map(v=>{const ms=Object.values(MODELS).filter(m=>m.rack&&m.v===v&&m.k===it.kind);return ms.length?`<optgroup label="${esc(VENDORS[v].n)}">${ms.map(m=>`<option value="${m.id}" ${m.id===p.model?'selected':''}>${esc(m.m)}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>`:'';
+  if(md&&it.kind!=='patch')props=msel+`<div class="kv"><span>Marca</span><b>${esc(VENDORS[md.v].n)}</b></div><div class="kv"><span>Porte</span><b>${esc(mSpec(md))}</b></div>${md.note?`<div class="kv"><span>Note</span><b>${esc(md.note)}</b></div>`:''}`;
+  else switch(it.kind){
     case 'fo':props=`<div class="f"><label>Uso</label>${sel('use',p.use,[['dorsale','Dorsale'],['distribuzione','Distribuzione'],['mista','Misto (non conforme)']])}</div>
       <div class="f"><label>Verso</label>${sel('dir',p.dir,[['arrivo','Arrivo'],['partenza','Partenza / rimando']])}</div>
       <div class="f"><label>Porte</label>${sel('ports',p.ports,[6,12,24])}</div>
       <div class="f"><label>Fibra</label>${sel('fiber',p.fiber,[['OS2','OS2 monomodale'],['OM3','OM3 multimodale'],['OM4','OM4 multimodale']])}</div>
       <div class="f"><label>Connettore</label>${sel('conn',p.conn,['LC','SC','ST'])}</div>`;break;
-    case 'patch':props=`<div class="f"><label>Porte</label>${sel('ports',p.ports,[[12,'12 (1 U)'],[24,'24 (1 U)'],[48,'48 (2 U)']])}</div><div class="f"><label>Categoria</label>${sel('cls',p.cls,['Cat 5e','Cat 6','Cat 6A','Cat 7'])}</div>`;break;
-    case 'sw':props=`<div class="f"><label>Porte RJ45</label>${sel('ports',p.ports,[8,16,24,48])}</div><div class="f"><label>Porte SFP</label>${sel('sfp',p.sfp,[0,2,4])}</div>${chk('poe',p.poe,'PoE')}`;break;
-    case 'fw':case 'router':case 'hub':case 'mc':case 'poe':props=`<div class="f"><label>Porte</label>${sel('ports',p.ports,[2,4,8,12,16,24])}</div>`;break;
-    case 'srv':props=`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>`;break;
+    case 'patch':props=msel+`<div class="f"><label>Porte</label>${sel('ports',p.ports,[[12,'12 (1 U)'],[24,'24 (1 U)'],[48,'48 (2 U)']])}</div><div class="f"><label>Categoria</label>${sel('cls',p.cls,['Cat 5e','Cat 6','Cat 6A','Cat 7'])}</div>`;break;
+    case 'sw':props=msel+`<div class="f"><label>Porte RJ45</label>${sel('ports',p.ports,[8,16,24,48])}</div><div class="f"><label>Porte SFP</label>${sel('sfp',p.sfp,[0,2,4])}</div>${chk('poe',p.poe,'PoE')}`;break;
+    case 'fw':case 'router':case 'hub':case 'mc':case 'poe':props=(['fw','router'].includes(it.kind)?msel:'')+`<div class="f"><label>Porte</label>${sel('ports',p.ports,[2,4,8,12,16,24])}</div>`;break;
+    case 'srv':props=msel+`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>`;break;
     case 'ups':props=`<div class="f"><label>Altezza</label>${sel('size',p.size,[[1,'1 U'],[2,'2 U'],[3,'3 U'],[4,'4 U']])}</div>${chk('onShelf',p.onShelf,'Installate su apposito ripiano','obbligatorio')}`;break;
     case 'shelf':props=`<div class="f"><label>Altezza reale</label><input type="number" data-f="real" min="0.5" max="10" step="0.5" value="${p.real}"></div><div class="kv"><span>Occupa (arrotondato)</span><b>${it.h} U</b></div>`;break;
     case 'unel':props=`<div class="f"><label>Prese</label>${sel('sockets',p.sockets,[4,6,8,9])}</div>`;break;
@@ -612,8 +854,9 @@ function devHtml(d,pl){
       link+=`<div class="f"><label>Presa</label><select data-dv="port">${!d.port?'<option value="">—</option>':''}${o}</select></div>`}
   }
   return `<div class="sez"><h3>${D.name}<button class="btn piccolo trasp" data-act="deselMk">← Planimetria</button></h3>
-  <div class="idbox"><div style="display:flex;align-items:center;gap:10px"><div class="ic" style="background:${D.col};width:34px;height:34px">${svgI(d.kind,'width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"')}</div><div><div class="big" style="font-size:18px">${esc(lab||'non collegato')}</div><div class="syn">${esc(d.name||'senza locale')}</div></div></div></div>
+  <div class="idbox"><div style="display:flex;align-items:center;gap:10px"><div class="ic" style="background:${D.col};width:34px;height:34px">${svgI(d.kind,'width="18" height="18" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"')}</div><div><div class="big" style="font-size:18px">${esc(lab||'non collegato')}</div><div class="syn">${esc([d.model&&MODELS[d.model]?mName(MODELS[d.model]):'',d.name||'senza locale'].filter(Boolean).join(' · '))}</div></div></div></div>
   <div class="f"><label>Tipo</label>${sel('kind',d.kind,Object.entries(DEV).map(([k,v])=>[k,v.short]),'data-dv')}</div>
+  <div class="f"><label>Modello</label><select data-dv="model"><option value="">Generico</option>${Object.keys(VENDORS).map(v=>{const ms=Object.values(MODELS).filter(m=>!m.rack&&m.v===v&&m.k===d.kind);return ms.length?`<optgroup label="${esc(VENDORS[v].n)}">${ms.map(m=>`<option value="${m.id}" ${m.id===d.model?'selected':''}>${esc(m.m)}</option>`).join('')}</optgroup>`:''}).join('')}</select></div>
   <div class="f"><label>Locale / nota</label><input type="text" data-dv="name" value="${esc(d.name)}" placeholder="es. Aula 1.02"></div>
   </div>
   <div class="sez"><h3>Collegamento</h3>${link}
@@ -680,38 +923,42 @@ function onUp(){
   if(d.plan){if(d.ip)d.onDrop(d.ip);return}
   if(d.pos&&d.valid){
     if(d.itemId)mutate(()=>{R().items.find(i=>i.id===d.itemId).pos=d.pos});
-    else mutate(()=>{const it=mkItem(d.kind,d.pos);R().items.push(it);S.item=it.id;S.port=null;S.right='props'});
+    else mutate(()=>{const it=d.make(d.pos);R().items.push(it);S.item=it.id;S.port=null;S.right='props'});
   }else if(d.pos)toast('Posizione occupata o fuori dall\'armadio');
 }
-function addKind(kind){
-  const r=R();const it=mkItem(kind);const c=KINDS[kind].cat;
+function addNew(it){
+  const r=R();const c=KINDS[it.kind].cat;
   const pos=freeSlot(r,it.h,!(c==='alimentazione'||c==='accessori'));
   if(!pos){toast(`Nessuno spazio libero di ${it.h} U in ${rid(r)}`);return}
   it.pos=pos;mutate(()=>{r.items.push(it);S.item=it.id;S.port=null;S.right='props'});
   document.body.classList.remove('lib');
 }
-function vpCenter(){const vp=$('#pv').getBoundingClientRect();return toImg(vp.left+vp.width/2,vp.top+vp.height/2)}
+function vpCenter(){const vp=$('#pv').getBoundingClientRect();const p=toImg(vp.left+vp.width/2,vp.top+vp.height/2);const pl=PL();const step=40/(pz(pl).k||1);let i=0;while(i<30&&(P.devices.some(d=>d.plan===pl.id&&Math.hypot(d.x-p.x,d.y-p.y)<step*.6)||P.racks.some(r=>r.loc?.plan===pl.id&&Math.hypot(r.loc.x-p.x,r.loc.y-p.y)<step*.6))){p.x+=step;if(i%6===5){p.x-=step*6;p.y+=step}i++}return p}
 function placeRack(rackId,p){mutate(()=>{const r=rackById(rackId);r.loc={plan:PL().id,x:Math.round(p.x),y:Math.round(p.y)};S.mk='rk:'+r.id;S.right='props'})}
 
 /* ---------------- eventi: colonna sinistra ---------------- */
 $('#leftBody').addEventListener('pointerdown',e=>{
   const c=e.target.closest('.card');if(!c)return;
-  if(c.dataset.kind){e.preventDefault();const k=c.dataset.kind;startDrag(e,{kind:k,h:hOf(mkItem(k)),label:KINDS[k].name,onClick:()=>addKind(k)});return}
+  if(c.dataset.kind){e.preventDefault();const k=c.dataset.kind;startDrag(e,{make:p=>mkItem(k,p),h:hOf(mkItem(k)),label:KINDS[k].name,onClick:()=>addNew(mkItem(k))});return}
+  if(c.dataset.rmodel){e.preventDefault();const id=c.dataset.rmodel;const m=MODELS[id];startDrag(e,{make:p=>mkModelItem(id,p),h:m.h,label:mName(m),onClick:()=>addNew(mkModelItem(id))});return}
+  if(c.dataset.fmodel){e.preventDefault();if(!PL()){toast('Carica prima una planimetria');return}const id=c.dataset.fmodel;const m=MODELS[id];startDrag(e,{plan:true,label:mName(m),onDrop:p=>addDevice(m.k,p.x,p.y,null,id),onClick:()=>{const p=vpCenter();addDevice(m.k,p.x,p.y,null,id);document.body.classList.remove('lib')}});return}
   if(c.dataset.dev){e.preventDefault();const k=c.dataset.dev;startDrag(e,{plan:true,label:DEV[k].name,onDrop:p=>addDevice(k,p.x,p.y),onClick:()=>{const p=vpCenter();addDevice(k,p.x,p.y);document.body.classList.remove('lib')}});return}
   if(c.dataset.prack){e.preventDefault();const r=rackById(c.dataset.prack);const here=r.loc&&r.loc.plan===PL().id;
     startDrag(e,{plan:true,label:rid(r),onDrop:p=>placeRack(r.id,p),onClick:()=>{if(here){S.mk='rk:'+r.id;S.right='props';render();centerOn(r.loc.x,r.loc.y)}else placeRack(r.id,vpCenter());document.body.classList.remove('lib')}});return}
   if(c.dataset.tport){e.preventDefault();const [rk,it,n]=c.dataset.tport.split('|');const port={rack:rk,item:it,port:+n};
     startDrag(e,{plan:true,label:c.querySelector('b').textContent,onDrop:p=>addDevice('to',p.x,p.y,port),onClick:()=>{const p=vpCenter();addDevice('to',p.x,p.y,port)}})}
 });
-$('#leftBody').addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;S._qfocus=true;renderLeft();S._qfocus=false}});
+$('#leftBody').addEventListener('input',e=>{if(e.target.id==='q'){S.q=e.target.value;S._qfocus='q';renderLeft();S._qfocus=false}if(e.target.id==='mq'){S[S.view==='rack'?'mqR':'mqP']=e.target.value;S._qfocus='mq';renderLeft();S._qfocus=false}});
 $('#leftBody').addEventListener('change',e=>{if(e.target.matches('[data-serve]')){S.serve=e.target.value;renderRight()}});
 $('#leftTabs').addEventListener('click',e=>{const t=e.target.closest('[data-lt]');if(t){if(S.view==='rack')S.leftR=t.dataset.lt;else S.leftP=t.dataset.lt;renderLeft()}if(e.target.closest('[data-act=closeLib]'))document.body.classList.remove('lib')});
 $('#leftBody').addEventListener('click',e=>{
   const ri=e.target.closest('[data-rack]');if(ri){S.rack=ri.dataset.rack;S.item=null;S.port=null;render();document.body.classList.remove('lib');return}
+  const vc=e.target.closest('[data-vend]');if(vc){S.vend=vc.dataset.vend;renderLeft();return}
   const pi=e.target.closest('[data-plan]');if(pi){S.plan=pi.dataset.plan;S.mk=null;S.calib=null;render();document.body.classList.remove('lib');return}
   const a=e.target.closest('[data-act]')?.dataset.act;
   if(a==='addRack')mutate(()=>{const cur=R();const r=newRack({b:cur?.b||'A',type:cur?.type==='CD'?'BD':cur?.type||'FD',floor:cur?.floor||0});P.racks.push(r);S.rack=r.id;S.item=null;S.right='props'});
   if(a==='upload')$('#planIn').click();
+  if(a==='goModels'){e.preventDefault();S.leftP='mod';renderLeft()}
 });
 
 /* ---------------- eventi: vista armadio ---------------- */
@@ -768,7 +1015,8 @@ $('#rightBody').addEventListener('change',e=>{
     else if(plf==='realW'){const m=parseFloat(t.value);pl.scale=m>0?m/pl.w:null}});return}
   if(dvf){const d=mkObj(S.mk);mutate(()=>{
     if(dvf==='name'){d.name=t.value.trim();const p=devPort(d);if(p){p.it.ports[p.n]={...(p.it.ports[p.n]||{t:'user'}),note:d.name};if(!d.name&&p.it.ports[p.n].t==='user')delete p.it.ports[p.n]}}
-    else if(dvf==='kind')d.kind=t.value;
+    else if(dvf==='kind'){d.kind=t.value;if(d.model&&MODELS[d.model]?.k!==d.kind)d.model=null}
+    else if(dvf==='model')d.model=t.value||null;
     else if(dvf==='rack'){d.rack=t.value||null;const rr=rackById(d.rack);const f0=rr?freePorts(rr)[0]:null;d.item=f0?f0.it.id:rr?.items.find(i=>i.kind==='patch')?.id||null;d.port=f0?f0.n:null}
     else if(dvf==='item'){d.item=t.value;const it=rackById(d.rack).items.find(i=>i.id===d.item);let n=null;for(let i=1;i<=+it.props.ports;i++){if(it.ports[i]?.t!=='link'&&!devAtPort(d.rack,d.item,i)){n=i;break}}d.port=n}
     else if(dvf==='port'){const n=+t.value||null;const other=n&&devAtPort(d.rack,d.item,n);if(other&&other!==d)toast('Attenzione: la presa è già assegnata a un altro elemento');d.port=n}
@@ -786,6 +1034,10 @@ $('#rightBody').addEventListener('change',e=>{
   if(it){
     mutate(()=>{
       if(f==='name'){it.name=val.trim();return}
+      if(f==='model'){const old=it.props.model&&MODELS[it.props.model];const m=MODELS[val];const wasDefault=!it.name||(old&&it.name===mName(old));
+        if(m){Object.assign(it.props,it.kind==='patch'?{ports:m.rj,model:m.id}:{ports:m.rj,sfp:m.sfp,poe:m.poe,size:m.h,model:m.id});if(wasDefault)it.name=mName(m)}else{delete it.props.model;if(wasDefault)it.name=''}
+        Object.keys(it.ports).forEach(k=>{if(+k>+it.props.ports)delete it.ports[k]});
+        const nh=hOf(it);if(nh!==it.h){if(!fits(r,it.pos,nh,it.id)){const alt=it.pos-(nh-it.h);if(fits(r,alt,nh,it.id))it.pos=alt;else{toast('Spazio insufficiente per l\'altezza del modello');return false}}it.h=nh}return}
       if(f==='pos'){const p=parseInt(val);if(!fits(r,p,it.h,it.id)){toast(`U${p}: posizione occupata o fuori dall'armadio`);return false}it.pos=p;return}
       it.props[f]=t.type==='checkbox'?val:(isNaN(+val)||val===''?val:+val);
       if(f==='real')it.props.real=Math.max(.5,+val||1);
@@ -1008,9 +1260,9 @@ async function exportJson(){
   download(slug(P.name)+'.json',JSON.stringify(out),'application/json');toast('Progetto esportato con le planimetrie');
 }
 function exportCsv(){
-  assignLetters();const rows=[['Armadio','Tipologia','Edificio','Piano','Pannello','Elemento','U','Presa','Etichetta in armadio','Etichetta presa / tratta','Tipo','Armadio remoto','Locale / nota','Apparato in planimetria','Planimetria','Cavo stimato (m)']];
+  assignLetters();const rows=[['Armadio','Tipologia','Edificio','Piano','Pannello','Elemento','U','Presa','Etichetta in armadio','Etichetta presa / tratta','Tipo','Armadio remoto','Locale / nota','Apparato in planimetria','Modello','Planimetria','Cavo stimato (m)']];
   P.racks.forEach(r=>{const L=panelLetters(r);[...r.items].filter(i=>KINDS[i.kind].term).sort((a,b)=>b.pos-a.pos).forEach(it=>{for(let n=1;n<=+it.props.ports;n++){const d=it.ports[n];const lk=d?.t==='link';const dv=devAtPort(r.id,it.id,n);const ci=dv?cableInfo(dv):null;
-    rows.push([rid(r),r.type,r.type==='CD'?'':r.b,r.floor,L[it.id],nm(it),it.pos,n,portLabel(r,it,n,L),lk?linkLabel(r,d):wallLabel(r,it,n,L),lk?'tratta':'utente',lk?rid(rackById(d.r)):'',d?.note||'',dv?DEV[dv.kind].short:'',dv?planById(dv.plan)?.name||'':'',ci?.m?ci.m.toFixed(1).replace('.',','):''])}})});
+    rows.push([rid(r),r.type,r.type==='CD'?'':r.b,r.floor,L[it.id],nm(it),it.pos,n,portLabel(r,it,n,L),lk?linkLabel(r,d):wallLabel(r,it,n,L),lk?'tratta':'utente',lk?rid(rackById(d.r)):'',d?.note||'',dv?DEV[dv.kind].short:'',dv&&MODELS[dv.model]?mName(MODELS[dv.model]):'',dv?planById(dv.plan)?.name||'':'',ci?.m?ci.m.toFixed(1).replace('.',','):''])}})});
   const csv='﻿'+rows.map(r=>r.map(v=>{v=String(v??'');return /[;"\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(';')).join('\r\n');
   download(slug(P.name)+'-etichette.csv',csv,'text/csv;charset=utf-8');toast('CSV etichette esportato');
 }
@@ -1046,7 +1298,7 @@ async function printPlan(){
   const pl=PL();if(!pl)return;let c;try{c=await planCanvas(pl,2400)}catch(e){toast('Immagine della planimetria non disponibile');return}
   const devs=P.devices.filter(d=>d.plan===pl.id).sort((a,b)=>(devLabel(a)||'~').localeCompare(devLabel(b)||'~'));const I=validatePlan(pl);
   let h=`<h1>Planimetria — ${esc(pl.name)}</h1><div>${esc(P.name)} · edificio ${pl.b} · piano ${pl.floor}${pl.scale?` · scala 1 px = ${fmt(pl.scale*100,2)} cm`:''} · stampata il ${new Date().toLocaleDateString('it-IT')}</div><img class="pianta" src="${c.toDataURL('image/jpeg',.9)}" alt="">`;
-  h+=`<h2>Elementi posizionati (${devs.length})</h2><table><tr><th>Etichetta</th><th>Tipo</th><th>Locale</th><th>Armadio</th><th>Cavo stimato</th></tr>${devs.map(d=>{const ci=cableInfo(d);return `<tr><td>${esc(devLabel(d)||'—')}</td><td>${DEV[d.kind].short}</td><td>${esc(d.name)}</td><td>${esc(devPort(d)?rid(devPort(d).r):'')}</td><td>${esc(ci.m?fmt(ci.m)+' m':ci.txt)}</td></tr>`}).join('')}</table>`;
+  h+=`<h2>Elementi posizionati (${devs.length})</h2><table><tr><th>Etichetta</th><th>Tipo</th><th>Modello</th><th>Locale</th><th>Armadio</th><th>Cavo stimato</th></tr>${devs.map(d=>{const ci=cableInfo(d);return `<tr><td>${esc(devLabel(d)||'—')}</td><td>${DEV[d.kind].short}</td><td>${esc(MODELS[d.model]?mName(MODELS[d.model]):'')}</td><td>${esc(d.name)}</td><td>${esc(devPort(d)?rid(devPort(d).r):'')}</td><td>${esc(ci.m?fmt(ci.m)+' m':ci.txt)}</td></tr>`}).join('')}</table>`;
   if(I.length)h+='<h2>Segnalazioni</h2><table>'+I.map(i=>`<tr><td>${{err:'Errore',warn:'Avviso',info:'Nota'}[i.lvl]}</td><td>${esc(i.ref)}</td><td>${esc(i.msg)}</td></tr>`).join('')+'</table>';
   $('#print').innerHTML=h;setTimeout(()=>window.print(),150);
 }

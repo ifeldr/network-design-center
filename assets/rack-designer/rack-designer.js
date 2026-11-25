@@ -13,7 +13,7 @@ const fmt=(n,d=1)=>Number(n).toLocaleString('it-IT',{maximumFractionDigits:d,min
 const STORE='rd-progetto-v1';
 const VENDOR=new URL('assets/rack-designer/vendor/pdfjs/',document.baseURI).href;
 const CAFFE='https://www.paypal.me/lorenzogarbi/1EUR';
-const SITO='https://ifeldr.github.io';
+const SITO='https://lorenzogarbi.it';
 
 /* ---------------- catalogo armadio ---------------- */
 const CAT={

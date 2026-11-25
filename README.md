@@ -4,8 +4,8 @@ Applicazione web per **progettare, verificare, etichettare e documentare la rete
 armadi rack, prese, permutazioni, apparati in pianta, VLAN e indirizzi, fino al sopralluogo in cantiere
 dal telefono e alla relazione finale in PDF.
 
-- Indirizzo: https://ifeldr.github.io/network-design-center/
-- Nel sito principale: menu **Progetti → Network Design Center** (https://ifeldr.github.io)
+- Indirizzo: https://design.lorenzogarbi.it/
+- Nel sito principale: menu **Progetti → Network Design Center** (https://lorenzogarbi.it)
 - Lingue: italiano e inglese
 - Funziona su Windows, macOS e Linux (Chrome, Edge, Firefox, Safari) e sul telefono
 
@@ -271,8 +271,8 @@ direttamente nei tuoi server tramite le API REST.
 Le chiamate partono dal browser, quindi il server deve:
 
 - essere in **HTTPS** (una pagina HTTPS non può chiamare un server HTTP);
-- accettare l'origine della pagina (CORS): in NetBox `CORS_ORIGIN_WHITELIST = ['https://ifeldr.github.io']`
-  in `configuration.py`; in Snipe-IT `CORS_ALLOWED_ORIGINS="https://ifeldr.github.io"` nel file `.env`,
+- accettare l'origine della pagina (CORS): in NetBox `CORS_ORIGIN_WHITELIST = ['https://design.lorenzogarbi.it']`
+  in `configuration.py`; in Snipe-IT `CORS_ALLOWED_ORIGINS="https://design.lorenzogarbi.it"` nel file `.env`,
   poi `php artisan config:clear`.
 
 Token e indirizzi restano solo nel browser (localStorage) e non entrano mai nel progetto, nei backup o
